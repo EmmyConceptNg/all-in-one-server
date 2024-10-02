@@ -6,10 +6,15 @@ const UserSchema = new mongoose.Schema({
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    role: {
+        type: String,
+        enum: ['super_admin', 'manager', 'staff'], 
+        default: 'staff'
+    },
     isVerified: { type: Boolean, default: false },
-    otp: { type: String },  
+    otp: { type: String },
     otpCreatedAt: { type: Date },
-    passwordResetToken: { type: String }, 
+    passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
 });
 
