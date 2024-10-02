@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const authMiddleware = require('./middlewares/authMiddleware');
 const scheduleRoutes = require('./routes/scheduleRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 
 require("dotenv").config();
 
@@ -15,6 +16,8 @@ app.use(express.json());
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:3000",
+
 ];
 
 app.use(
@@ -35,6 +38,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/schedules", scheduleRoutes);
+app.use('/api/projects', projectRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
