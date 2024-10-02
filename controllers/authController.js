@@ -4,7 +4,6 @@ const sendEmail = require('../utils/sendEmail');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register new user
 exports.register = async (req, res) => {
   const { firstName, lastName, email, password, confirmPassword, role } = req.body;
 
@@ -16,7 +15,6 @@ exports.register = async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: 'User already exists' });
 
-    // Assign default role of 'staff' if role not provided
     const userRole = role || 'staff';
 
     user = new User({ firstName, lastName, email, password, role: userRole });
@@ -33,7 +31,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// OTP verification
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -66,7 +63,6 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
-// Login
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -79,7 +75,6 @@ exports.login = async (req, res) => {
 
     if (!user.isVerified) return res.status(400).json({ msg: 'Account not verified' });
 
-    // Include role in JWT token
     const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: '1h',
     });
@@ -89,7 +84,8 @@ exports.login = async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role, // Include role in response
+      role: user.role, 
+      id: user._id,
       isVerified: user.isVerified,
     });
   } catch (error) {
@@ -98,7 +94,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Forgot password
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
 
@@ -119,7 +114,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// Reset password
 exports.resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
@@ -137,7 +131,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// Resend OTP
 exports.resendOtp = async (req, res) => {
   const { email } = req.params;
 
