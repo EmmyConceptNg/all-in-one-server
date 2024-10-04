@@ -5,6 +5,8 @@ const authRoutes = require("./routes/auth");
 const authMiddleware = require('./middlewares/authMiddleware');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const projectRoutes = require('./routes/projectRoutes');
+const accountingRoutes = require('./routes/accountingRoutes');
+
 
 require("dotenv").config();
 
@@ -39,6 +41,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/accounting', accountingRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
