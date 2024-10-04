@@ -41,7 +41,7 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ msg: 'User not found' });
     }
 
-    const otpExpiryDuration = 15 * 60 * 1000;  // 15 minutes
+    const otpExpiryDuration = 15 * 60 * 1000;  
     const currentTime = Date.now();
 
     if (currentTime - new Date(user.otpCreatedAt).getTime() > otpExpiryDuration) {
