@@ -75,9 +75,7 @@ exports.login = async (req, res) => {
 
     if (!user.isVerified) return res.status(400).json({ msg: 'Account not verified' });
 
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET);
 
     res.status(200).json({
       token,
