@@ -4,7 +4,7 @@ const scheduleSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   scheduleType: {
     type: String,
-    enum: ["holiday", "sick leave", "annual leave"],
+    enum: ["holiday", "sick_leave", "annual_leave"],
     required: true,
   },
   startDate: { type: Date, required: true },
