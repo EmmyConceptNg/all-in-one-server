@@ -6,6 +6,9 @@ const authMiddleware = require('./middlewares/authMiddleware');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const accountingRoutes = require('./routes/accountingRoutes');
+const employeeRoutes = require('./routes/employee');
+const workspaceRoutes = require('./routes/workspaceRoutes');
+const timeTrackerRoutes = require('./routes/timeTrackerRoutes');
 
 
 require("dotenv").config();
@@ -42,6 +45,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/accounting', accountingRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/workspaces', workspaceRoutes);
+app.use('/api/time-tracker', timeTrackerRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
