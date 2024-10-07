@@ -8,5 +8,6 @@ router.put('/edit/:id', authMiddleware(['super_admin', 'manager']), WorkspaceCon
 router.delete('/delete/:id', authMiddleware(['super_admin', 'manager']), WorkspaceController.deleteWorkspace);
 router.get('/all', authMiddleware(['super_admin', 'manager']), WorkspaceController.getAllWorkspaces);
 router.get('/view/:id', authMiddleware(['super_admin', 'manager']), WorkspaceController.getWorkspaceById);
-
+router.post('/add-employee', authMiddleware(['manager', 'super_admin']), WorkspaceController.addEmployeeToWorkspace);
+  
 module.exports = router;
