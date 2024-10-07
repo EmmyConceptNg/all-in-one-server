@@ -150,3 +150,30 @@ exports.resendOtp = async (req, res) => {
     res.status(500).json({ msg: 'Server error', error: error.message });
   }
 };
+
+exports.changeUserRole = async (req, res) => {
+  const { userId, newRole } = req.body;
+
+  try {
+    const validRoles = ['staff', 'manager'];
+    if (!validRoles.includes(newRole)) {
+      return res.status(400).json({ message: 'Invalid role. Role can only be changed to staff or manager.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === newRole) {
+      return res.status(400).json({ message: `User is already a ${newRole}` });
+    }
+
+    user.role = newRole;
+    await user.save();
+
+    res.status(200).json({ message: `User role changed to ${newRole} successfully`, user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
