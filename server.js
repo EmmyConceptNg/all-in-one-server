@@ -9,6 +9,7 @@ const accountingRoutes = require('./routes/accountingRoutes');
 const employeeRoutes = require('./routes/employee');
 const workspaceRoutes = require('./routes/workspaceRoutes');
 const timeTrackerRoutes = require('./routes/timeTrackerRoutes');
+const contractRoutes = require('./routes/contractRoutes');
 
 
 require("dotenv").config();
@@ -48,6 +49,7 @@ app.use('/api/accounting', accountingRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/time-tracker', timeTrackerRoutes);
+app.use('/api/contracts', contractRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
