@@ -1,4 +1,5 @@
 const Employee = require('../models/Employee');
+const User = require('../models/User');
 
 exports.addEmployee = async (req, res) => {
   const {
@@ -19,7 +20,16 @@ exports.addEmployee = async (req, res) => {
     });
 
     await newEmployee.save();
-    res.status(201).json({ message: 'Employee added successfully', employee: newEmployee });
+
+    const newUser = new User({ firstName, lastName, email, password: email, role: 'staff', isVerified: true, });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: 'Employee and User account created successfully',
+      employee: newEmployee,
+      user: newUser,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
