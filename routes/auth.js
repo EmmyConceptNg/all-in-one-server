@@ -14,5 +14,6 @@ router.post('/admin-only-route', authMiddleware('super_admin'), (req, res) => {r
 router.get('/manager-only-route', authMiddleware('manager'), (req, res) => {res.send('Manager access');});
 router.get('/staff-route', authMiddleware('staff'), (req, res) => {res.send('Staff access');});
 router.put('/change-role', authMiddleware(['super_admin']), authController.changeUserRole);  
+router.get('/users', authMiddleware(['super_admin']), authController.getAllUsers);
 
 module.exports = router;
