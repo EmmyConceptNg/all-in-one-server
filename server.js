@@ -10,6 +10,7 @@ const employeeRoutes = require('./routes/employee');
 const workspaceRoutes = require('./routes/workspaceRoutes');
 const timeTrackerRoutes = require('./routes/timeTrackerRoutes');
 const contractRoutes = require('./routes/contractRoutes');
+const uploadRoutes = require("./routes/uploads");
 
 
 require("dotenv").config();
@@ -50,6 +51,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/time-tracker', timeTrackerRoutes);
 app.use('/api/contracts', contractRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
