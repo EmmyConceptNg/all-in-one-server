@@ -10,6 +10,11 @@ const scheduleSchema = new mongoose.Schema({
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   notes: { type: String, required: false }, 
+  workspaceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace',
+    required: true
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

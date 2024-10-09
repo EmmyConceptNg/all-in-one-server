@@ -2,102 +2,105 @@ const Project = require('../models/Project');
 const User = require('../models/User'); 
 
 exports.addProject = async (req, res) => {
-  const { projectName, startDate, endDate, description, managerId, tasks, status, budget, skillsRequired } = req.body;
+  const {
+    projectName,
+    startDate,
+    endDate,
+    managerId,
+    tasks,
+    projectDescription,
+    status,
+    budget,
+    skillsRequired,
+    progress
+  } = req.body;
 
   try {
-    const manager = await User.findById(managerId);
-    if (!manager) {
-      return res.status(404).json({ message: 'Manager not found' });
-    }
-
     const newProject = new Project({
+      superAdminId: req.userId,
       projectName,
       startDate,
       endDate,
-      description,
-      manager: managerId,
+      managerId,
       tasks,
-      createdBy: req.userId, 
+      projectDescription,
       status,
       budget,
       skillsRequired,
+      progress
     });
 
     await newProject.save();
-    res.status(201).json({ message: 'Project created successfully', project: newProject });
+
+    res.status(201).json({ message: 'Project added successfully', project: newProject });
   } catch (error) {
-    console.error('Error creating project:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getAllProjectsBySuperAdmin = async (req, res) => {
+  try {
+    const projects = await Project.find({ superAdminId: req.userId });
+
+    res.status(200).json({ projects });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getAllProjectsByUser = async (req, res) => {
+  try {
+    const projects = await Project.find({ managers: req.userId });
+
+    res.status(200).json({ projects });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.getAllProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate('manager', 'firstName lastName'); 
-    res.status(200).json(projects);
+    if (req.userRole === 'super_admin' || req.userRole === 'owner') {
+      const projects = await Project.find();
+      res.status(200).json({ projects });
+    } else {
+      const projects = await Project.find({ managers: req.userId });
+      res.status(200).json({ projects });
+    }
   } catch (error) {
-    console.error('Error fetching projects:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.editProject = async (req, res) => {
-  const { id } = req.params;
-  const { projectName, startDate, endDate, description, managerId, tasks, status, budget, skillsRequired, progress } = req.body;
+  const projectId = req.params.id;
+  const updateFields = req.body;
 
   try {
-    const project = await Project.findById(id);
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+    const updatedProject = await Project.findOneAndUpdate({ _id: projectId, managers: req.userId }, updateFields, { new: true });
+
+    if (!updatedProject) {
+      return res.status(404).json({ message: 'Project not found or you do not have permission to edit this project' });
     }
 
-    if (project.createdBy.toString() !== req.userId && req.userRole !== 'super_admin') {
-      return res.status(403).json({ message: 'You do not have permission to edit this project' });
-    }
-
-    if (managerId) {
-      const manager = await User.findById(managerId);
-      if (!manager) {
-        return res.status(404).json({ message: 'Manager not found' });
-      }
-      project.manager = managerId; 
-    }
-
-    project.projectName = projectName || project.projectName;
-    project.startDate = startDate || project.startDate;
-    project.endDate = endDate || project.endDate;
-    project.description = description || project.description;
-    project.tasks = tasks || project.tasks;
-    project.status = status || project.status;
-    project.budget = budget || project.budget;
-    project.skillsRequired = skillsRequired || project.skillsRequired;
-    project.progress = progress !== undefined ? progress : project.progress; 
-
-    await project.save();
-    res.status(200).json({ message: 'Project updated successfully', project });
+    res.status(200).json({ message: 'Project updated successfully', project: updatedProject });
   } catch (error) {
-    console.error('Error updating project:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
 exports.deleteProject = async (req, res) => {
-  const { id } = req.params;
+  const projectId = req.params.id;
 
   try {
-    const project = await Project.findById(id);
-    if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+    const deletedProject = await Project.findOneAndDelete({ _id: projectId, managers: req.userId });
+
+    if (!deletedProject) {
+      return res.status(404).json({ message: 'Project not found or you do not have permission to delete this project' });
     }
 
-    if (project.createdBy.toString() !== req.userId && req.userRole !== 'super_admin') {
-      return res.status(403).json({ message: 'You do not have permission to delete this project' });
-    }
-
-    await Project.deleteOne({ _id: id });
-    res.status(200).json({ message: 'Project deleted successfully' });
+    res.status(200).json({ message: 'Project deleted successfully', project: deletedProject });
   } catch (error) {
-    console.error('Error deleting project:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

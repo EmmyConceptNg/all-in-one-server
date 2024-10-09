@@ -11,13 +11,13 @@ const authMiddleware = (requiredRoles = []) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      if (!decoded.userId || !decoded.name) { // Ensure that name is included in the token payload
+      if (!decoded.userId || !decoded.name || !decoded.role) {
         return res.status(401).json({ message: "Invalid token payload" });
       }
 
       req.userId = decoded.userId;
-      req.userName = decoded.name; // Extracting userName from the token payload
-      req.userRole = decoded.role;
+      req.userName = decoded.name;
+      req.userRole = decoded.role; 
 
       if (requiredRoles.length && !requiredRoles.includes(req.userRole)) {
         return res.status(403).json({ message: "You do not have the required permissions" });

@@ -1,27 +1,12 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const WorkspaceSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  branch: {
-    type: String,
-    required: true,
-  },
-  color: {
-    type: String,
-    required: true,
-  },
-  employees: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Employee',
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+const workspaceSchema = new mongoose.Schema({
+    workspaceName: { type: String, required: true },
+    branch: { type: String, required: true },
+    color: { type: String },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
-module.exports = mongoose.model('Workspace', WorkspaceSchema);
+const Workspace = mongoose.model('Workspace', workspaceSchema);
+
+module.exports = Workspace;

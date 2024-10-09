@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
-  const { firstName, lastName, email, password, confirmPassword, role } = req.body;
+  const { firstName, lastName, email, password, confirmPassword } = req.body;
 
   if (password !== confirmPassword) {
     return res.status(400).json({ msg: 'Passwords do not match' });
@@ -15,17 +15,21 @@ exports.register = async (req, res) => {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ msg: 'User already exists' });
 
-    const userRole = role || 'staff';
+    const otp = generateOtp();
+    const emailSubject = 'OTP Verification Code';
+    const emailText = `Your OTP for registration is: ${otp}`;
 
-    user = new User({ firstName, lastName, email, password, role: userRole });
-    user.otp = generateOtp();  
-    user.otpCreatedAt = new Date();  
+    try {
+      await sendEmail(email, emailSubject, emailText);
 
-    await user.save(); 
+      user = new User({ firstName, lastName, email, password, role: 'super_admin', otp });
+      await user.save();
 
-    await sendEmail(user.email, 'OTP Verification', `Your OTP is ${user.otp}`);
+      res.status(200).json({ msg: 'Registration successful. OTP sent to your email.' });
+    } catch (error) {
+      res.status(500).json({ msg: 'Failed to send OTP. Please try again later.' });
+    }
 
-    res.status(200).json({ msg: 'Registration successful, OTP sent to your email' });
   } catch (error) {
     res.status(500).json({ msg: 'Server error' });
   }
