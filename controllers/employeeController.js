@@ -66,7 +66,6 @@ exports.addEmployee = async (req, res) => {
       workingHoursPerWeek,
       workingHoursPerMonth,
       annualVacationDays,
-      workspaceId,
     });
 
     await newEmployee.save();
