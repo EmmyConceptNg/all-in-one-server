@@ -3,70 +3,11 @@ const User = require('../models/User');
 
 exports.addEmployee = async (req, res) => {
   const {
-    firstName,
-    middleName,
-    lastName,
-    address,
-    email,
-    ssn,
-    healthInsurance,
-    tin,
-    nationality,
-    taxClass,
-    dateOfBirth,
-    countryOfBirth,
-    placeOfBirth,
-    maritalStatus,
-    gender,
-    disabled,
-    children,
-    childAllowance,
-    religion,
-    IBAN,
-    BIC,
-    entryDate,
-    jobType,
-    anotherJob,
-    partTimeJob,
-    workingHoursPerWeek,
-    workingHoursPerMonth,
-    annualVacationDays,
-    workspaceId, 
-  } = req.body;
+    firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId, } = req.body;
 
   try {
     const newEmployee = new Employee({
-      superAdminId: req.userId,
-      workspaceId, 
-      firstName,
-      middleName,
-      lastName,
-      address,
-      email,
-      ssn,
-      healthInsurance,
-      tin,
-      nationality,
-      taxClass,
-      dateOfBirth,
-      countryOfBirth,
-      placeOfBirth,
-      maritalStatus,
-      gender,
-      disabled,
-      children,
-      childAllowance,
-      religion,
-      IBAN,
-      BIC,
-      entryDate,
-      jobType,
-      anotherJob,
-      partTimeJob,
-      workingHoursPerWeek,
-      workingHoursPerMonth,
-      annualVacationDays,
-    });
+      superAdminId: req.userId, workspaceId, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, });
 
     await newEmployee.save();
 

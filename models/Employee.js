@@ -6,6 +6,11 @@ const employeeSchema = new mongoose.Schema({
     ref: 'SuperAdmin', 
     required: true
   },
+  workspaceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Workspace', 
+    required: true
+  },
   firstName: { type: String, required: true },
   middleName: String,
   lastName: { type: String, required: true },

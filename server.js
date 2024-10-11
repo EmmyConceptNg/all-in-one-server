@@ -1,25 +1,27 @@
 const express = require("express");
+const { json } = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db");
-const authRoutes = require("./routes/auth");
-const authMiddleware = require('./middlewares/authMiddleware');
-const scheduleRoutes = require('./routes/scheduleRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const accountingRoutes = require('./routes/accountingRoutes');
-const employeeRoutes = require('./routes/employee');
-const workspaceRoutes = require('./routes/workspaceRoutes');
-const timeTrackerRoutes = require('./routes/timeTrackerRoutes');
-const contractRoutes = require('./routes/contractRoutes');
-const uploadRoutes = require("./routes/uploads");
+const connectDB = require("./config/db.js");
+const authRoutes = require("./routes/auth.js");
+const authMiddleware = require('./middlewares/authMiddleware.js');
+const scheduleRoutes = require('./routes/scheduleRoutes.js');
+const projectRoutes = require('./routes/projectRoutes.js');
+const employeeRoutes = require('./routes/employee.js');
+const workspaceRoutes = require('./routes/workspaceRoutes.js');
+const timeTrackerRoutes = require('./routes/timeTrackerRoutes.js');
+const contractRoutes = require('./routes/contractRoutes.js');
+const uploadRoutes = require("./routes/uploads.js");
+const superAdminRoutes = require('./routes/superAdminRoutes.js');
+const notificationRoutes = require("./routes/notificationRoutes");
 
-
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 
 connectDB();
 
-app.use(express.json());
+app.use(json());
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -46,12 +48,13 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/accounting', accountingRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/time-tracker', timeTrackerRoutes);
 app.use('/api/contracts', contractRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use('/api/super_admin', superAdminRoutes);
+app.use("/api/notification", notificationRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

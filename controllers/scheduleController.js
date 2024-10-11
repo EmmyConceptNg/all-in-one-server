@@ -1,4 +1,5 @@
 const Schedule = require('../models/Schedule');
+const User = require('../models/User');
 
 exports.addSchedule = async (req, res) => {
   const { scheduleType, startDate, endDate, notes, workspaceId } = req.body;
@@ -23,7 +24,7 @@ exports.addSchedule = async (req, res) => {
 
 exports.getUserSchedules = async (req, res) => {
   try {
-    const userSchedules = await Schedule.find({ userId: req.userId });
+    const userSchedules = await Schedule.find({ userId: req.userId }).populate('userId', 'firstName lastName');
 
     res.status(200).json({ schedules: userSchedules });
   } catch (error) {
