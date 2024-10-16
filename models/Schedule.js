@@ -9,7 +9,14 @@ const scheduleSchema = new mongoose.Schema({
   },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  notes: { type: String, required: false }, 
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+  occurrence: {
+    type: String,
+    enum: ["weekdays", "daily", "individual"],
+    default: "individual",
+  },
+  notes: { type: String, required: false },
   workspaceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Workspace',

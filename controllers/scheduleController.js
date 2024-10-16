@@ -2,7 +2,7 @@ const Schedule = require('../models/Schedule');
 const User = require('../models/User');
 
 exports.addSchedule = async (req, res) => {
-  const { scheduleType, startDate, endDate, notes, workspaceId } = req.body;
+  const { scheduleType, startDate, endDate, startTime, endTime, occurrence, notes, workspaceId } = req.body;
 
   try {
     const newSchedule = new Schedule({
@@ -10,6 +10,9 @@ exports.addSchedule = async (req, res) => {
       scheduleType,
       startDate,
       endDate,
+      startTime,
+      endTime,
+      occurrence,
       notes,
       workspaceId
     });
