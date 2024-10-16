@@ -11,6 +11,10 @@ const employeeSchema = new mongoose.Schema({
     ref: 'Workspace', 
     required: true
   },
+  isManager: { 
+    type: Boolean,
+    default: false
+  },
   firstName: { type: String, required: true },
   middleName: String,
   lastName: { type: String, required: true },
