@@ -7,8 +7,8 @@ async function getAllMappedDetails(req, res) {
     const employees = await Employee.find({ superAdminId: req.userId });
     const workspaces = await Workspace.find({ createdBy: req.userId });
     const schedules = await Schedule.find({ userId: { $in: employees.map(employee => employee.userId) } });
-    const managers = employees.filter(employee => employee.isManager === true);
-    const regularEmployees = employees.filter(employee => employee.isManager !== true);
+    const managers = employees.filter(employee => employee.role === 'manager');
+    const regularEmployees = employees.filter(employee => employee.role === 'staff');
 
     res.status(200).json({ managers, regularEmployees, workspaces, schedules });
   } catch (error) {
