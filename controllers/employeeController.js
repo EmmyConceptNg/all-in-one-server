@@ -2,12 +2,16 @@ const Employee = require('../models/Employee');
 const User = require('../models/User');
 
 exports.addEmployee = async (req, res) => {
-  const {
-    firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId, } = req.body;
+  const { 
+    role, 
+    firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId } = req.body;
 
   try {
     const newEmployee = new Employee({
-      superAdminId: req.userId, workspaceId, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, });
+      superAdminId: req.userId, workspaceId, 
+      firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays,
+      role: role 
+    });
 
     await newEmployee.save();
 
@@ -15,9 +19,9 @@ exports.addEmployee = async (req, res) => {
       firstName,
       lastName,
       email,
-      password: email, 
-      role: 'staff', 
-      isVerified: 'true'
+      password: email,
+      role: role, 
+      isVerified: true
     });
 
     await newUser.save();

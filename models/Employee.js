@@ -8,12 +8,16 @@ const employeeSchema = new mongoose.Schema({
   },
   workspaceId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Workspace', 
-    required: true
+    ref: 'Workspace' 
   },
   isManager: { 
     type: Boolean,
     default: false
+  },
+  role: {
+    type: String,
+    enum: ['super_admin', 'manager', 'staff'],
+    default: 'staff'
   },
   firstName: { type: String, required: true },
   middleName: String,
