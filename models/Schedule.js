@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const scheduleSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  superAdminId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   scheduleType: {
     type: String,
     enum: ["holiday", "sick_leave", "annual_leave"],

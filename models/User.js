@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
         enum: ['owner', 'super_admin', 'manager', 'staff'],
         default: 'staff'
     },
+    superAdminId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SuperAdmin' 
+    },
     isVerified: { type: Boolean, default: false },
     otp: { type: String },
     otpCreatedAt: { type: Date },

@@ -1,12 +1,20 @@
 const Schedule = require('../models/Schedule');
 const User = require('../models/User');
+const { getSuperAdminIdForStaff } = require('../utils/userUtils');
 
 exports.addSchedule = async (req, res) => {
   const { scheduleType, startDate, endDate, startTime, endTime, occurrence, notes, workspaceId } = req.body;
 
   try {
+    const superAdminId = await getSuperAdminIdForStaff(req.userId);
+
+    if (!superAdminId) {
+      return res.status(400).json({ message: 'Super Admin ID not found for the staff member' });
+    }
+
     const newSchedule = new Schedule({
       userId: req.userId,
+      superAdminId, 
       scheduleType,
       startDate,
       endDate,

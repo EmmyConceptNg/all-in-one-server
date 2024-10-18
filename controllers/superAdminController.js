@@ -1,12 +1,17 @@
 const Workspace = require('../models/Workspace');
 const Employee = require('../models/Employee');
 const Schedule = require('../models/Schedule');
+const User = require('../models/User'); 
 
 async function getAllMappedDetails(req, res) {
   try {
     const employees = await Employee.find({ superAdminId: req.userId });
     const workspaces = await Workspace.find({ createdBy: req.userId });
-    const schedules = await Schedule.find({ userId: { $in: employees.map(employee => employee.userId) } });
+
+    const userObjects = await User.find({ _id: { $in: employees.map(employee => employee.userId) } });
+    const userIds = userObjects.map(user => user._id); 
+    const schedules = await Schedule.find({ superAdminId: req.userId });
+
     const managers = employees.filter(employee => employee.role === 'manager');
     const regularEmployees = employees.filter(employee => employee.role === 'staff');
 

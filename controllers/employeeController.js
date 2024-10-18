@@ -3,30 +3,32 @@ const User = require('../models/User');
 
 exports.addEmployee = async (req, res) => {
   const { 
-    role, 
-    firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId } = req.body;
+    role, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, 
+    countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, 
+    jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId } = req.body;
 
   try {
     const newEmployee = new Employee({
-      superAdminId: req.userId, workspaceId, 
-      firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays,
-      role: role 
+      superAdminId: req.userId, 
+      workspaceId, role, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, 
+      dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, 
+      IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays
     });
 
-    await newEmployee.save();
-
+    const savedEmployee = await newEmployee.save();
     const newUser = new User({
       firstName,
       lastName,
       email,
       password: email,
-      role: role, 
-      isVerified: true
+      role,
+      isVerified: true,
+      superAdminId: req.userId
     });
 
-    await newUser.save();
+    const savedUser = await newUser.save();
 
-    res.status(201).json({ message: 'Employee added successfully', employee: newEmployee });
+    res.status(201).json({ message: 'Employee added successfully', employee: savedEmployee, user: savedUser });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
