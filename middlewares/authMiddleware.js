@@ -17,7 +17,7 @@ const authMiddleware = (requiredRoles = []) => {
 
       req.userId = decoded.userId;
       req.userName = decoded.name;
-      req.userRole = decoded.role; 
+      req.userRole = decoded.role;
 
       if (requiredRoles.length && !requiredRoles.includes(req.userRole)) {
         return res.status(403).json({ message: "You do not have the required permissions" });

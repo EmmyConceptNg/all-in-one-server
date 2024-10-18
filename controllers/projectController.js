@@ -77,7 +77,12 @@ exports.editProject = async (req, res) => {
   const updateFields = req.body;
 
   try {
-    const updatedProject = await Project.findOneAndUpdate({ _id: projectId, managers: req.userId }, updateFields, { new: true });
+    let projectQuery = {
+      _id: projectId,
+      $or: [{ superAdminId: req.userId }, { managers: req.userId }]
+    };
+
+    const updatedProject = await Project.findOneAndUpdate(projectQuery, updateFields, { new: true });
 
     if (!updatedProject) {
       return res.status(404).json({ message: 'Project not found or you do not have permission to edit this project' });
@@ -93,7 +98,12 @@ exports.deleteProject = async (req, res) => {
   const projectId = req.params.id;
 
   try {
-    const deletedProject = await Project.findOneAndDelete({ _id: projectId, managers: req.userId });
+    let projectQuery = {
+      _id: projectId,
+      $or: [{ superAdminId: req.userId }, { managers: req.userId }]
+    };
+
+    const deletedProject = await Project.findOneAndDelete(projectQuery);
 
     if (!deletedProject) {
       return res.status(404).json({ message: 'Project not found or you do not have permission to delete this project' });
