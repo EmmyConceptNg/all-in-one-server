@@ -54,3 +54,27 @@ exports.getAllTimeEntries = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.pauseTimer = async (req, res) => {
+  const { userId } = req;
+
+  try {
+    const ongoingTimer = await TimeTracker.findOne({ userId, status: 'started' });
+
+    if (!ongoingTimer) {
+      return res.status(404).json({ message: 'No ongoing timer found' });
+    }
+
+    if (ongoingTimer.status !== 'paused') {
+      ongoingTimer.status = 'paused';
+      ongoingTimer.pauseTime = Date.now();
+      await ongoingTimer.save();
+
+      res.status(200).json({ message: 'Timer paused successfully', timeTracker: ongoingTimer });
+    } else {
+      return res.status(400).json({ message: 'Timer is already paused' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

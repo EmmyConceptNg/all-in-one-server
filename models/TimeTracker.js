@@ -5,8 +5,9 @@ const TimeTrackerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   startTime: { type: Date, required: true },
   endTime: { type: Date },
+  pauseTime: { type: Date },
   date: { type: Date, default: Date.now },
-  status: { type: String, enum: ['started', 'ended'], default: 'started' }
+  status: { type: String, enum: ['started', 'paused', 'ended'], default: 'started' }
 });
 
 const TimeTracker = mongoose.model('TimeTracker', TimeTrackerSchema);

@@ -6,5 +6,6 @@ const authMiddleware = require('../middlewares/authMiddleware');
 router.post('/start', authMiddleware(['staff', 'manager', 'super_admin']), timeTrackerController.startTimer);
 router.post('/end', authMiddleware(['staff', 'manager', 'super_admin']), timeTrackerController.endTimer);
 router.get('/all', authMiddleware(['staff', 'manager', 'super_admin']), timeTrackerController.getAllTimeEntries);
+router.post('/pauseTimer', authMiddleware(['staff', 'manager', 'super_admin']), timeTrackerController.pauseTimer);
 
 module.exports = router;
