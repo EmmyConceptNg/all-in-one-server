@@ -1,7 +1,9 @@
 const Workspace = require('../models/Workspace');
 const Employee = require('../models/Employee');
 const Schedule = require('../models/Schedule');
-const User = require('../models/User'); 
+const User = require('../models/User');
+const Project = require('../models/Project');
+const Contract = require('../models/Contracts');
 
 async function getAllMappedDetails(req, res) {
   try {
@@ -15,7 +17,10 @@ async function getAllMappedDetails(req, res) {
     const managers = employees.filter(employee => employee.role === 'manager');
     const regularEmployees = employees.filter(employee => employee.role === 'staff');
 
-    res.status(200).json({ managers, regularEmployees, workspaces, schedules });
+    const projects = await Project.find({ superAdminId: req.userId });
+    const contracts = await Contract.find({ superAdminId: req.userId });
+
+    res.status(200).json({ managers, regularEmployees, workspaces, schedules, projects, contracts });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
