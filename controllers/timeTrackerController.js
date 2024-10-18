@@ -56,10 +56,10 @@ exports.getAllTimeEntries = async (req, res) => {
 };
 
 exports.pauseTimer = async (req, res) => {
-  const { userId } = req;
+  const { userId, userName } = req; 
 
   try {
-    const ongoingTimer = await TimeTracker.findOne({ userId, status: 'started' });
+    const ongoingTimer = await TimeTracker.findOne({ staffName: userName, status: 'started' });
 
     if (!ongoingTimer) {
       return res.status(404).json({ message: 'No ongoing timer found' });
