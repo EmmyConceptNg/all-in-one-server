@@ -7,6 +7,7 @@ async function getSuperAdminIdForStaff(userId) {
   try {
     let superAdminId = null;
     const user = await User.findById(userId);
+    
     if (user) {
       superAdminId = user.superAdminId;
     } else {
@@ -15,8 +16,9 @@ async function getSuperAdminIdForStaff(userId) {
         superAdminId = employee.superAdminId;
       }
     }
+    
     if (superAdminId) {
-      superAdminId = ObjectId(superAdminId);
+      superAdminId = new ObjectId(superAdminId); 
     }
 
     return superAdminId;
