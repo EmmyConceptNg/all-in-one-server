@@ -9,18 +9,15 @@ async function getAllMappedDetails(req, res) {
   try {
     const employees = await Employee.find({ superAdminId: req.userId });
     const workspaces = await Workspace.find({ createdBy: req.userId });
-
-    const userObjects = await User.find({ _id: { $in: employees.map(employee => employee.userId) } });
-    const userIds = userObjects.map(user => user._id); 
+    const userObjects = await User.find({ superAdminId: req.userId });
     const schedules = await Schedule.find({ superAdminId: req.userId });
-
     const managers = employees.filter(employee => employee.role === 'manager');
     const regularEmployees = employees.filter(employee => employee.role === 'staff');
-
     const projects = await Project.find({ superAdminId: req.userId });
-    const contracts = await Contract.find({ superAdminId: req.userId });
 
-    res.status(200).json({ managers, regularEmployees, workspaces, schedules, projects, contracts });
+    const contracts = await Contract.find({ superAdminId: req.userId }).populate('employeeId');
+
+    res.status(200).json({ users: userObjects, managers, regularEmployees, workspaces, schedules, projects, contracts });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

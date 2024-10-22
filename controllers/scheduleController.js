@@ -13,8 +13,8 @@ exports.addSchedule = async (req, res) => {
     }
 
     const newSchedule = new Schedule({
-      userId: req.userId,
-      superAdminId, 
+      userId: req.userId, 
+      superAdminId,
       scheduleType,
       startDate,
       endDate,

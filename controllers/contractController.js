@@ -1,4 +1,5 @@
 const Contract = require('../models/Contracts');
+const Employee = require('../models/Employee');
 const { getSuperAdminIdForStaff } = require('../utils/userUtils');
 
 exports.addContract = async (req, res) => {
@@ -6,11 +7,26 @@ exports.addContract = async (req, res) => {
     if (!req.body.employeeId) {
       return res.status(400).json({ message: 'Employee ID not found in request body' });
     }
+
     const { employeeId, startDate, managingDirector, address, contractType, endDate } = req.body;
-    const superAdminId = await getSuperAdminIdForStaff(employeeId);
+
+    let superAdminId = await getSuperAdminIdForStaff(employeeId);
 
     if (!superAdminId) {
-      return res.status(404).json({ message: 'Super Admin ID not found for the staff member' });
+      superAdminId = "default_super_admin_id"; 
+    }
+
+
+    // const superAdminId = await getSuperAdminIdForStaff(employeeId);
+
+    // if (!superAdminId) {
+    //   return res.status(404).json({ message: 'Super Admin ID not found for the staff member' });
+    // }
+
+    const employee = await Employee.findById(employeeId);
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
     }
 
     const newContract = new Contract({
@@ -20,7 +36,8 @@ exports.addContract = async (req, res) => {
       address,
       contractType,
       endDate,
-      superAdminId
+      superAdminId,
+      employeeDetails: employee 
     });
 
     await newContract.save();

@@ -1,10 +1,11 @@
 const User = require('../models/User');
 const Employee = require('../models/Employee');
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 async function getSuperAdminIdForStaff(userId) {
   try {
     let superAdminId = null;
-
     const user = await User.findById(userId);
     if (user) {
       superAdminId = user.superAdminId;
@@ -13,6 +14,9 @@ async function getSuperAdminIdForStaff(userId) {
       if (employee) {
         superAdminId = employee.superAdminId;
       }
+    }
+    if (superAdminId) {
+      superAdminId = ObjectId(superAdminId);
     }
 
     return superAdminId;
