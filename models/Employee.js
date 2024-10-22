@@ -3,17 +3,17 @@ const mongoose = require('mongoose');
 const employeeSchema = new mongoose.Schema({
   superAdminId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'SuperAdmin', 
-    required: true
+    ref: "SuperAdmin",
+    required: true,
   },
   workspaceId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Workspace' 
+    ref: "Workspace",
   },
   role: {
     type: String,
-    enum: ['super_admin', 'manager', 'staff'],
-    default: 'staff'
+    enum: ["super_admin", "manager", "staff"],
+    default: "staff",
   },
   firstName: { type: String, required: true },
   middleName: String,
@@ -22,9 +22,11 @@ const employeeSchema = new mongoose.Schema({
     postalCode: String,
     city: String,
     street: String,
-    houseNumber: String
+    houseNumber: String,
   },
   email: { type: String, required: true },
+  phone: String,
+  rating: Number,
   ssn: String,
   healthInsurance: String,
   tin: String,
@@ -47,7 +49,10 @@ const employeeSchema = new mongoose.Schema({
   partTimeJob: Boolean,
   workingHoursPerWeek: Number,
   workingHoursPerMonth: Number,
-  annualVacationDays: Number
+  annualVacationDays: Number,
+  templates : [
+    String,
+  ]
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);

@@ -10,9 +10,11 @@ const employeeRoutes = require('./routes/employee.js');
 const workspaceRoutes = require('./routes/workspaceRoutes.js');
 const timeTrackerRoutes = require('./routes/timeTrackerRoutes.js');
 const contractRoutes = require('./routes/contractRoutes.js');
-const uploadRoutes = require("./routes/uploads.js");
+const templateRoutes = require("./routes/templateRoutes.js");
 const superAdminRoutes = require('./routes/superAdminRoutes.js');
 const notificationRoutes = require("./routes/notificationRoutes");
+
+const path = require("path");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -45,6 +47,8 @@ app.use(
   })
 );
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use('/api/projects', projectRoutes);
@@ -52,7 +56,7 @@ app.use('/api/employees', employeeRoutes);
 app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/time-tracker', timeTrackerRoutes);
 app.use('/api/contracts', contractRoutes);
-app.use("/api/uploads", uploadRoutes);
+app.use("/api/templates", templateRoutes);
 app.use('/api/super_admin', superAdminRoutes);
 app.use("/api/notification", notificationRoutes);
 

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const contractSchema = new mongoose.Schema({
-  employeeId: {
+  employee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Employee",
     required: true
@@ -21,42 +21,10 @@ const contractSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   },
-  employeeDetails: {
-    firstName: String,
-    middleName: String,
-    lastName: String,
-    address: {
-      postalCode: String,
-      city: String,
-      street: String,
-      houseNumber: String
-    },
-    email: String,
-    ssn: String,
-    healthInsurance: String,
-    tin: String,
-    nationality: String,
-    taxClass: String,
-    dateOfBirth: Date,
-    countryOfBirth: String,
-    placeOfBirth: String,
-    maritalStatus: String,
-    gender: String,
-    disabled: Boolean,
-    children: Boolean,
-    childAllowance: Number,
-    religion: String,
-    IBAN: String,
-    BIC: String,
-    entryDate: Date,
-    jobType: String,
-    anotherJob: Boolean,
-    partTimeJob: Boolean,
-    workingHoursPerWeek: Number,
-    workingHoursPerMonth: Number,
-    annualVacationDays: Number
-  }
-});
+  content : String,
+  filePath:String,
+  
+}, {timestamps : true});
 
 const Contract = mongoose.model("Contract", contractSchema);
 

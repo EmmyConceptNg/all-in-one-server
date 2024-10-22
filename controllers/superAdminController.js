@@ -15,7 +15,7 @@ async function getAllMappedDetails(req, res) {
     const regularEmployees = employees.filter(employee => employee.role === 'staff');
     const projects = await Project.find({ superAdminId: req.userId });
 
-    const contracts = await Contract.find({ superAdminId: req.userId }).populate('employeeId');
+    const contracts = await Contract.find({ superAdminId: req.userId }).populate('employee');
 
     res.status(200).json({ users: userObjects, managers, regularEmployees, workspaces, schedules, projects, contracts });
   } catch (error) {

@@ -16,10 +16,10 @@ async function getSuperAdminIdForStaff(userId) {
         superAdminId = employee.superAdminId;
       }
     }
-    
-    if (superAdminId) {
-      superAdminId = new ObjectId(superAdminId); 
-    }
+    // causing an error on contract creation
+    // if (superAdminId) {
+    //   superAdminId = ObjectId(superAdminId);
+    // }
 
     return superAdminId;
   } catch (error) {
