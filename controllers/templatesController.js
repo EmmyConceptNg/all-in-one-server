@@ -14,7 +14,7 @@ exports.uploadFile = async (req, res) => {
     const newUpload = new Template({
       employeeId: req.userId,
       filePath: path.resolve(req.file.path),
-      fileName: req.file.filename,
+      fileName: req.file.originalname,
       fileSize: req.file.size,
     });
 
