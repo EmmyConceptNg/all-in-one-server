@@ -1,14 +1,14 @@
 const path = require("path");
 const Template = require("../models/Template");
-const { createWorker } = require("tesseract.js");
 const fs = require("fs");
 const Employee = require("../models/Employee");
 const EmployeeTemplate = require("../models/EmployeeTemplate");
 const pdf = require("html-pdf");
 const { PDFDocument } = require("pdf-lib");
-const { createCanvas, Image } = require("canvas");
 const axios = require("axios");
-const sharp = require("sharp");
+const FormData = require("form-data");
+const Contract = require("../models/Contracts");
+const moment = require("moment");
 
 
 exports.uploadFile = async (req, res) => {
@@ -70,7 +70,7 @@ exports.deleteTemplate = async (req, res) => {
 
 
 exports.assignTemplate = async(req, res) => {
-  const { startDate, endDate, employeeId, type, templateId } = req.body;
+  const { startDate, endDate, employeeId, contractType, templateId } = req.body;
 const managerDetails = await Employee.findOne({ superAdminId: req.userId });
 const employee = await Employee.findOne({ _id: employeeId });
 
@@ -79,11 +79,16 @@ const employee = await Employee.findOne({ _id: employeeId });
 const contractDetails = {
   startDate,
   endDate,
-  type,
+  contractType,
 };
 
   try{
-    await useTemplate(templateId, employee, contractDetails, managerDetails, req);
+    const usedTemplate = await useTemplate(templateId, employee, contractDetails, managerDetails, req);
+    if(usedTemplate){
+      res
+        .status(200)
+        .json({ message: "Message assigned successfully", usedTemplate });
+    }
   }catch(error){
     res.status(500).json({error})
   }
@@ -104,12 +109,11 @@ async function useTemplate(
   try {
     // Step 1: Fetch the template
     const template = await fetchTemplateById(templateId);
-    const pdfPath = template.filePath;
+    const pdfUrl = template.filePath;
 
     // Step 2: Extract text from the PDF using OCR
-    const extractedContent = await extractTextFromPDF(pdfPath);
 
-    console.log("extracted content", extractedContent);
+    const extractedContent = await convertPdfToText(pdfUrl);
 
     // Step 3: Replace placeholders in the template with employee details
     const modifiedContent = replaceTemplateFields(
@@ -125,7 +129,7 @@ async function useTemplate(
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     const relativeFilePath = `/uploads/${newFileName}`;
-    const absoluteFilePath = path.join(__dirname, "uploads", newFileName);
+    const absoluteFilePath = path.join(__dirname, "..", "uploads", newFileName);
 
     // PDF options with margins
     const pdfOptions = {
@@ -138,18 +142,29 @@ async function useTemplate(
       },
     };
 
+    console.log("Generating pdf form  template >>>");
     // Generate PDF from HTML content with margins
     await new Promise((resolve, reject) => {
+      console.log("Starting PDF creation...");
+      console.log("Content:", modifiedContent);
+      console.log("Options:", pdfOptions);
+      console.log("File Path:", absoluteFilePath);
+
       pdf
         .create(modifiedContent, pdfOptions)
         .toFile(absoluteFilePath, (err, res) => {
           if (err) {
             console.error("Error creating PDF:", err);
             reject(err);
+          } else {
+            console.log("PDF created successfully:", res);
+            resolve(res);
           }
-          resolve(res);
         });
     });
+
+
+    // console.log("contract details", contractDetails);
 
     // Step 5: Save the details in the DB
     const employeeTemplateData = {
@@ -157,17 +172,36 @@ async function useTemplate(
       filepath: `${baseUrl}${relativeFilePath}`,
       startDate: contractDetails.startDate,
       employeeId: employeeData._id,
-      type: contractDetails.type,
+      type: contractDetails.contractType,
       endDate: contractDetails.endDate,
     };
 
+
+    const newContract = new Contract({
+      employee: employeeData._id,
+      startDate: contractDetails.startDate,
+      managingDirector: managerDetails._id,
+      contractType: contractDetails.contractType,
+      endDate: contractDetails.endDate,
+      content: modifiedContent,
+      superAdminId:req.userId
+    });
+
+
+
+    console.log('Saving template >>>')
     const savedTemplate = await saveEmployeeTemplate(employeeTemplateData);
 
     // Add the new template to the employee's record
+
+    newContract.file = savedTemplate._id;
+    await newContract.save();
+
     const addToEmployee = await Employee.findOne({ _id: employeeData._id });
-    addToEmployee.templates.push(savedTemplate._id);
+    addToEmployee.templates.push(newContract._id);
     await addToEmployee.save();
 
+    
     return savedTemplate;
   } catch (error) {
     console.error("Error in useTemplate:", error);
@@ -195,109 +229,72 @@ async function fetchTemplateById(templateId) {
 
 
 
-async function downloadFile(url, outputPath) {
-  const response = await axios({
-    url,
-    method: "GET",
-    responseType: "stream",
-  });
-  return new Promise((resolve, reject) => {
-    const writer = fs.createWriteStream(outputPath);
-    response.data.pipe(writer);
-    writer.on("finish", resolve);
-    writer.on("error", reject);
-  });
-}
+const convertPdfToText = async (pdfPath) => {
+  const apiKey = process.env.OCR_API;
 
-async function pdfToImages(pdfPath) {
-  const pdfData = await fs.promises.readFile(pdfPath);
-  const pdfDoc = await PDFDocument.load(pdfData);
-  const imageFiles = [];
-
-  for (let i = 0; i < pdfDoc.getPageCount(); i++) {
-    const page = pdfDoc.getPage(i);
-    const { width, height } = page.getSize();
-    const canvas = createCanvas(width, height);
-    const context = canvas.getContext("2d");
-
-    // Render the page to canvas (you might need a library for this)
-    // const imageData = page.render();
-    // context.putImageData(imageData, 0, 0);
-
-    const imageFile = `page-${i + 1}.png`;
-    const out = fs.createWriteStream(imageFile);
-    const stream = canvas.createPNGStream();
-    stream.pipe(out);
-
-    await new Promise((resolve, reject) => {
-      out.on("finish", () => {
-        imageFiles.push(imageFile);
-        resolve();
-      });
-      out.on("error", reject);
-    });
-  }
-
-  return imageFiles;
-}
-
-
-async function extractTextFromPDF(pdfUrl) {
   try {
-    const pdfPath = "./downloads/pdfFile.pdf";
-    await downloadFile(pdfUrl, pdfPath);
+    const baseUrls = [
+      "http://localhost:5555",
+      "https://all-in-one-hr.onrender.com",
+    ];
 
-    // Check if PDF file exists
-    if (!fs.existsSync(pdfPath)) {
-      console.error("PDF file not found after download.");
-      return "";
+    let relativePath = pdfPath;
+    baseUrls.forEach((baseUrl) => {
+      if (pdfPath.startsWith(baseUrl)) {
+        relativePath = pdfPath.replace(baseUrl, "");
+      }
+    });
+
+    const localFilePath = `.${relativePath}`;
+    const pdfBuffer = fs.readFileSync(localFilePath);
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const numPages = pdfDoc.getPageCount();
+
+    let combinedText = "";
+
+    for (let i = 0; i < numPages; i++) {
+      const singlePagePdf = await PDFDocument.create();
+      const [page] = await singlePagePdf.copyPages(pdfDoc, [i]);
+      singlePagePdf.addPage(page);
+      const singlePagePdfBytes = await singlePagePdf.save();
+
+      const form = new FormData();
+      form.append("apikey", apiKey);
+      form.append("isTable", "true");
+      form.append("scale", "true");
+      form.append("language", "eng");
+      form.append("OCREngine", "1");
+      form.append("file", Buffer.from(singlePagePdfBytes), "page.pdf");
+
+      const { data: ocrResult } = await axios.post(
+        "https://apipro1.ocr.space/parse/image",
+        form,
+        {
+          headers: {
+            ...form.getHeaders(),
+          },
+        }
+      );
+
+      if (ocrResult.IsErroredOnProcessing) {
+        console.error("Error during OCR processing:", ocrResult.ErrorMessage);
+        continue;
+      }
+
+      // Use <br /> for HTML line breaks
+      combinedText +=
+        ocrResult.ParsedResults[0].ParsedText.replace(/\n/g, "<br /> <br />") +
+        "<br /> <br />";
     }
 
-    const imageFiles = await pdfToImages(pdfPath);
-    console.log("Image files:", imageFiles);
-    if (imageFiles.length === 0) {
-      console.error("No images were created from the PDF.");
-      return "";
-    }
+    let result = combinedText.trim();
 
-    const worker = await createWorker();
-
-    
-
-    let fullText = "";
-
-    for (const imagePath of imageFiles) {
-      console.log(`Preprocessing ${imagePath}...`);
-      const processedImagePath = await preprocessImage(imagePath); // Get the new path
-      console.log(`Recognizing text from ${processedImagePath}...`);
-      const {
-        data: { text },
-      } = await worker.recognize(processedImagePath);
-      console.log(`Recognized text from ${processedImagePath}:`, text);
-      fullText += text + "\n"; // Append recognized text
-    }
-
-
-
-    console.log("Full Text:", fullText);
-
-    await worker.terminate();
-    return fullText; // Return the concatenated text
+    return result;
   } catch (error) {
-    throw new Error("Error extracting text from PDF: " + error.message);
+    console.error("Error processing text:", error);
+    return null;
   }
-}
-
-async function preprocessImage(imagePath) {
-  const processedImagePath = imagePath.replace(".png", "-processed.png");
-  await sharp(imagePath)
-    .resize(1200) // Resize to width of 1200 pixels
-    .greyscale() // Convert to grayscale
-    .modulate({ brightness: 1.2, contrast: 1.5 }) // Increase brightness and contrast
-    .sharpen() // Sharpen the image
-    .toFile(processedImagePath); // Save to a new file
-  return processedImagePath;
-}
+};
 
 
 
@@ -308,43 +305,56 @@ async function preprocessImage(imagePath) {
 
 
 
-function replaceTemplateFields(content, employeeData, contractDetails, mangerDetails) {
 
-  console.log(content);
+
+
+function replaceTemplateFields(
+  content,
+  employeeData,
+  contractDetails,
+  mangerDetails
+) {
+  console.log("modifying >>>>>>", content);
+
+  if (!content) {
+    console.error("Content is undefined or null");
+    return content;
+  }
+
   let modifiedContent = content;
-  modifiedContent = modifiedContent.replace(
-    /{{manager_firstname}}/g,
-    mangerDetails.firstName
-  );
-  modifiedContent = modifiedContent.replace(
-    /{{manager_lastname}}/g,
-    mangerDetails.lastName
-  );
-  modifiedContent = modifiedContent.replace(
-    /{{manger_address}}/g,
-    `${mangerDetails.houseNumber}, ${mangerDetails.street} Str,  ${mangerDetails.city}`
-  );
-  modifiedContent = modifiedContent.replace(
-    /{{firstname}}/g,
-    employeeData.firstName
-  );
-  modifiedContent = modifiedContent.replace(
-    /{{lastname}}/g,
-    employeeData.lastName
-  );
-  modifiedContent = modifiedContent.replace(
-    /{{house_number}}/g,
-    employeeData.houseNumber
-  );
-  modifiedContent = modifiedContent.replace(/{{street}}/g, employeeData.street);
-  modifiedContent = modifiedContent.replace(/{{city}}/g, employeeData.city);
-  modifiedContent = modifiedContent.replace(
-    /{{dob}}/g,
-    employeeData.dateOfBirth
-  );
-  // Replace other fields as necessary
 
-  
+  const replacements = [
+    { placeholder: /\[manager firstname\]/g, value: mangerDetails.firstName },
+    { placeholder: /\[manager lastname\]/g, value: mangerDetails.lastName },
+    {
+      placeholder: /\[manger address\]/g,
+      value: `${mangerDetails.address.houseNumber}, ${mangerDetails.address.street} Str, ${mangerDetails.address.city}`,
+    },
+    { placeholder: /\[employee firstname\]/g, value: employeeData.firstName },
+    { placeholder: /\[employee lastname\]/g, value: employeeData.lastName },
+    {
+      placeholder: /\[house number\]/g,
+      value: employeeData.address.houseNumber,
+    },
+    { placeholder: /\[street\]/g, value: employeeData.address.street },
+    { placeholder: /\[city\]/g, value: employeeData.address.city },
+    { placeholder: /\[start date\]/g, value: contractDetails.startDate },
+    { placeholder: /\[end date\]/g, value: contractDetails.endDate },
+    {
+      placeholder: /\[dob\]/g,
+      value: moment(employeeData.dateOfBirth).format("MMM Do YY"),
+    },
+    // Add more replacements as needed
+  ];
+
+  replacements.forEach(({ placeholder, value }) => {
+    if (value !== undefined && value !== null) {
+      modifiedContent = modifiedContent.replace(placeholder, value);
+    }
+  });
+
+  console.log("done modifying >>>>>>");
+
   return modifiedContent;
 }
 
