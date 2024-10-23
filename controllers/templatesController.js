@@ -11,9 +11,12 @@ exports.uploadFile = async (req, res) => {
   }
 
   try {
+    const baseUrl = process.env.BASE_URL; 
+    const relativeFilePath = `/uploads/${req.file.filename}`; 
+
     const newUpload = new Template({
       employeeId: req.userId,
-      filePath: path.resolve(req.file.path),
+      filePath: `${baseUrl}${relativeFilePath}`, 
       fileName: req.file.originalname,
       fileSize: req.file.size,
     });
@@ -31,6 +34,7 @@ exports.uploadFile = async (req, res) => {
     });
   }
 };
+
 
 exports.fetchUserTemplates = async (req, res) => {
   try {
