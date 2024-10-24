@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Employee = require('../models/Employee');
 const generateOtp = require('../utils/generateOTP');
 const sendEmail = require('../utils/sendEmail');
 const bcrypt = require('bcryptjs');
@@ -175,6 +176,12 @@ exports.changeUserRole = async (req, res) => {
 
     user.role = newRole;
     await user.save();
+
+    const employee = await Employee.findOne({ email: user.email });
+    if (employee) {
+      employee.role = newRole;
+      await employee.save();
+    }
 
     res.status(200).json({ message: `User role changed to ${newRole} successfully`, user });
   } catch (error) {
