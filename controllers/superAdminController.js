@@ -4,6 +4,7 @@ const Schedule = require('../models/Schedule');
 const User = require('../models/User');
 const Project = require('../models/Project');
 const Contract = require('../models/Contracts');
+const TimeTracker = require('../models/TimeTracker');
 
 async function getAllMappedDetails(req, res) {
   try {
@@ -17,7 +18,17 @@ async function getAllMappedDetails(req, res) {
     const contracts = await Contract.find({ superAdminId: req.userId }).populate('employee');
     const timeEntries = await TimeTracker.find({ userId: { $in: userObjects.map(user => user._id) } });
 
-    res.status(200).json({ users: userObjects, managers, regularEmployees, workspaces, schedules, projects, contracts });
+    res.status(200).json({
+      users: userObjects,
+      managers,
+      regularEmployees,
+      workspaces,
+      schedules,
+      projects,
+      contracts,
+      timeEntries
+    });
+
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
