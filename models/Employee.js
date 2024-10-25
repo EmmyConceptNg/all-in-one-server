@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const employeeSchema = new mongoose.Schema({
   superAdminId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "SuperAdmin",
+    ref: "User",
     required: true,
   },
   workspaceId: {

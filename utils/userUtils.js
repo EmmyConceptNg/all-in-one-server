@@ -9,7 +9,7 @@ async function getSuperAdminIdForStaff(userId) {
     const user = await User.findById(userId);
     
     if (user) {
-      superAdminId = user.superAdminId;
+      superAdminId = user._id;
     } else {
       const employee = await Employee.findById(userId);
       if (employee) {

@@ -8,6 +8,7 @@ exports.addSchedule = async (req, res) => {
   try {
     const superAdminId = await getSuperAdminIdForStaff(req.userId);
 
+    console.log(superAdminId);
     if (!superAdminId) {
       return res.status(400).json({ message: 'Super Admin ID not found for the staff member' });
     }

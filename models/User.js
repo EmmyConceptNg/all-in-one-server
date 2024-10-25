@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     },
     superAdminId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'SuperAdmin' 
+        ref: 'User' 
     },
     isVerified: { type: Boolean, default: false },
     otp: { type: String },
