@@ -65,13 +65,17 @@ exports.deleteEmployee = async (req, res) => {
 
 exports.getAllEmployeesBySuperAdmin = async (req, res) => {
   try {
-    if (req.userRole !== 'owner' && req.userRole !== 'super_admin') {
-      return res.status(403).json({ message: 'You do not have the required permissions' });
+    // if (req.userRole === 'staff') {
+    //   const employees = await Employee.find({ $or: [{ superAdminId: req.userId }, { userId: req.userId }] });
+    //   return res.status(200).json({ employees });
+    // }
+
+    if (req.userRole === 'owner' || req.userRole === 'super_admin' || req.userRole === 'manager' || req.userRole === 'staff') {
+      const employees = await Employee.find();
+      return res.status(200).json({ employees });
     }
 
-    const employees = await Employee.find();
-
-    res.status(200).json({ employees });
+    return res.status(403).json({ message: 'You do not have the required permissions' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

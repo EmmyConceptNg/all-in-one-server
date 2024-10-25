@@ -67,8 +67,8 @@ exports.getAllWorkspacesByCreator = async (req, res) => {
       if (employee) {
         workspaces = await Workspace.find({ createdBy: employee.superAdminId });
       }
-    } else if (req.userRole === 'owner') {
-      workspaces = await Workspace.find();
+    } else if (req.userRole === 'owner' || req.userRole === 'staff') {
+      workspaces = await Workspace.find({ createdBy: req.userId });
     }
 
     res.status(200).json({ workspaces });
@@ -76,7 +76,6 @@ exports.getAllWorkspacesByCreator = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 exports.addEmployeeToWorkspace = async (req, res) => {
   const { employeeId, workspaceId } = req.params;
 

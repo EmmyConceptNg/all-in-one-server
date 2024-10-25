@@ -50,7 +50,7 @@ exports.getAllProjectsBySuperAdmin = async (req, res) => {
 
 exports.getAllProjectsByUser = async (req, res) => {
   try {
-    const projects = await Project.find({ managers: req.userId });
+    const projects = await Project.find({ superAdminId: req.userId });
 
     res.status(200).json({ projects });
   } catch (error) {
