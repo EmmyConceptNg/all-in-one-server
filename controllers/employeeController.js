@@ -1,5 +1,7 @@
 const Employee = require('../models/Employee');
 const User = require('../models/User');
+const Workspace = require('../models/Workspace');
+const { getSuperAdminIdForStaff } = require('../utils/userUtils');
 
 exports.addEmployee = async (req, res) => {
   const { 
@@ -65,14 +67,21 @@ exports.deleteEmployee = async (req, res) => {
 
 exports.getAllEmployeesBySuperAdmin = async (req, res) => {
   try {
-    // if (req.userRole === 'staff') {
-    //   const employees = await Employee.find({ $or: [{ superAdminId: req.userId }, { userId: req.userId }] });
-    //   return res.status(200).json({ employees });
-    // }
-
     if (req.userRole === 'owner' || req.userRole === 'super_admin' || req.userRole === 'manager' || req.userRole === 'staff') {
-      const employees = await Employee.find();
-      return res.status(200).json({ employees });
+      let superAdminId;
+
+      if (req.userRole === 'staff') {
+        superAdminId = await getSuperAdminIdForStaff(req.userId);
+      } else {
+        superAdminId = req.userId;
+      }
+
+      if (superAdminId) {
+        const employees = await Employee.find({ superAdminId: superAdminId });
+        return res.status(200).json({ employees });
+      } else {
+        return res.status(404).json({ message: 'Super admin not found for this staff user' });
+      }
     }
 
     return res.status(403).json({ message: 'You do not have the required permissions' });
