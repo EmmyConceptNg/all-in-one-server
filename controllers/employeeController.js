@@ -89,3 +89,22 @@ exports.getAllEmployeesBySuperAdmin = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+exports.getEmployeesMappedToSameSuperAdmin = async (req, res) => {
+  try {
+    if (req.userRole === 'staff') {
+      const superAdminId = await getSuperAdminIdForStaff(req.userId);
+
+      if (superAdminId) {
+        const employees = await Employee.find({ superAdminId: superAdminId });
+        return res.status(200).json({ employees });
+      } else {
+        return res.status(404).json({ message: 'Super admin not found for this staff user' });
+      }
+    } else {
+      return res.status(403).json({ message: 'You do not have the required permissions' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
