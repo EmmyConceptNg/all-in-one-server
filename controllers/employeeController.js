@@ -1,5 +1,7 @@
 const Employee = require('../models/Employee');
 const User = require('../models/User');
+const Workspace = require('../models/Workspace');
+const { getSuperAdminIdForStaff } = require('../utils/userUtils');
 
 exports.addEmployee = async (req, res) => {
   const { 
@@ -63,17 +65,20 @@ exports.deleteEmployee = async (req, res) => {
   }
 };
 
+
 exports.getAllEmployeesBySuperAdmin = async (req, res) => {
   try {
-    if (req.userRole !== 'owner' && req.userRole !== 'super_admin') {
-      return res.status(403).json({ message: 'You do not have the required permissions' });
+    if (req.userRole !== "owner" && req.userRole !== "super_admin") {
+      return res
+        .status(403)
+        .json({ message: "You do not have the required permissions" });
     }
 
     const user = await User.findOne(req.userId);
 
-    const userWorkspace = await Employee.findOne({email :user.email })
+    const userWorkspace = await Employee.findOne({ email: user.email });
 
-    let employees = []
+    let employees = [];
     if (req.userRole === "manager" || req.userRole === "staff") {
       employees = await Employee.find({
         workspaceId: userWorkspace.workspaceId,
@@ -82,9 +87,8 @@ exports.getAllEmployeesBySuperAdmin = async (req, res) => {
       employees = await Employee.find();
     }
 
-
     res.status(200).json({ employees });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
