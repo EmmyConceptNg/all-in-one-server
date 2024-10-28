@@ -16,6 +16,13 @@ exports.addContract = async (req, res) => {
         .json({ message: "Employee ID not found in request body" });
     }
 
+    if (req.userRole !== "manager" || req.userRole !== "super_admin") {
+      return res
+        .status(403)
+        .json({ message: "You do not have the required permissions" });
+    }
+
+
     const {
       employeeId,
       startDate,

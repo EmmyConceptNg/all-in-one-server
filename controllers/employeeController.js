@@ -69,7 +69,19 @@ exports.getAllEmployeesBySuperAdmin = async (req, res) => {
       return res.status(403).json({ message: 'You do not have the required permissions' });
     }
 
-    const employees = await Employee.find();
+    const user = await User.findOne(req.userId);
+
+    const userWorkspace = await Employee.findOne({email :user.email })
+
+    let employees = []
+    if (req.userRole === "manager" || req.userRole === "staff") {
+      employees = await Employee.find({
+        workspaceId: userWorkspace.workspaceId,
+      });
+    } else {
+      employees = await Employee.find();
+    }
+
 
     res.status(200).json({ employees });
   } catch (error) {
