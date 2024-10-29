@@ -10,6 +10,9 @@ const templateSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    logoPath: {
+      type: String,
+    },
     fileName: String,
     fileSize: String,
   },

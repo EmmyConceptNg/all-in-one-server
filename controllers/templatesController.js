@@ -12,25 +12,33 @@ const moment = require("moment");
 
 
 exports.uploadFile = async (req, res) => {
-  if (!req.file || !req.file.path) {
-    return res.status(400).json({ message: "File path not provided" });
+  // Check if both files are uploaded
+  if (!req.files || !req.files.pdfFile || !req.files.logoImage) {
+    return res
+      .status(400)
+      .json({ message: "PDF file and logo image are required" });
   }
 
   try {
-    const baseUrl = process.env.BASE_URL; 
-    const relativeFilePath = `/uploads/${req.file.filename}`; 
+    const baseUrl = process.env.BASE_URL;
+    const pdfFile = req.files.pdfFile[0];
+    const logoImage = req.files.logoImage[0];
+
+    const pdfFilePath = `/uploads/${pdfFile.filename}`;
+    const logoImagePath = `/uploads/${logoImage.filename}`;
 
     const newUpload = new Template({
       employeeId: req.userId,
-      filePath: `${baseUrl}${relativeFilePath}`, 
-      fileName: req.file.originalname,
-      fileSize: req.file.size,
+      filePath: `${baseUrl}${pdfFilePath}`,
+      fileName: pdfFile.originalname,
+      fileSize: pdfFile.size,
+      logoPath: `${baseUrl}${logoImagePath}`, // Add logo path to the database
     });
 
     await newUpload.save();
 
     return res.status(200).json({
-      message: "PDF file uploaded successfully",
+      message: "Files uploaded successfully",
       newUpload,
     });
   } catch (error) {
@@ -40,6 +48,7 @@ exports.uploadFile = async (req, res) => {
     });
   }
 };
+
 
 
 exports.fetchUserTemplates = async (req, res) => {
