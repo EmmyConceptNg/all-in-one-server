@@ -68,12 +68,6 @@ exports.deleteEmployee = async (req, res) => {
 
 exports.getAllEmployeesBySuperAdmin = async (req, res) => {
   try {
-    if (req.userRole !== "owner" && req.userRole !== "super_admin") {
-      return res
-        .status(403)
-        .json({ message: "You do not have the required permissions" });
-    }
-    
 
     const user = await User.findById(req.userId);
 
