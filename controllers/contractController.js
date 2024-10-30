@@ -16,12 +16,11 @@ exports.addContract = async (req, res) => {
         .json({ message: "Employee ID not found in request body" });
     }
 
-    if (req.userRole !== "manager" || req.userRole !== "super_admin") {
+    if (req.userRole !== "manager" && req.userRole !== "super_admin") {
       return res
         .status(403)
         .json({ message: "You do not have the required permissions" });
     }
-
 
     const {
       employeeId,
@@ -30,16 +29,14 @@ exports.addContract = async (req, res) => {
       address,
       contractType,
       endDate,
-      content, // This is your HTML content
+      content,
     } = req.body;
 
     let superAdminId = await getSuperAdminIdForStaff(employeeId);
-
     if (!superAdminId) {
       superAdminId = "default_super_admin_id";
     }
 
-    // Create a new contract object
     const newContract = new Contract({
       employee: employeeId,
       startDate,
@@ -51,37 +48,51 @@ exports.addContract = async (req, res) => {
       content,
     });
 
-    // Prepare the file path
-    const pdfFileName = `${employeeId}-contract.pdf`;
+    const pdfFileName = `${employeeId}-${Date.now()}-contract.pdf`;
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     const relativeFilePath = `/uploads/${pdfFileName}`;
     const absoluteFilePath = path.join(__dirname, "..", "uploads", pdfFileName);
 
-    // PDF options with margins
     const pdfOptions = {
       format: "A4",
       border: {
-        top: "1in", 
+        top: "1in",
         right: "0.75in",
         bottom: "1in",
         left: "0.75in",
       },
+      timeout: 300000,
     };
 
-    // Generate PDF from HTML content with margins
+    // Ensure req.file is defined
+    if (!req.file) {
+      return res.status(400).json({ message: "Logo image is required" });
+    }
+
+    // Convert logo image to Base64
+    const logoPath = req.file.path;
+    const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
+    const logoDataUrl = `data:image/png;base64,${logoBase64}`;
+
+    const htmlContent = `
+      <div style="text-align: center;">
+        <img src="${logoDataUrl}" alt="Logo" style="width: 150px; height: auto;"/>
+      </div>
+      ${content}
+    `;
+
     pdf
-      .create(content, pdfOptions)
+      .create(htmlContent, pdfOptions)
       .toFile(absoluteFilePath, async (err, result) => {
         if (err) {
           console.error("Error generating PDF:", err);
           return res.status(500).json({ message: "Error generating PDF" });
         }
 
-        // Save the template in EmployeeTemplate
         const employeeTemplate = new EmployeeTemplate({
           content,
-          filepath: `${baseUrl}${relativeFilePath}`, 
+          filepath: `${baseUrl}${relativeFilePath}`,
           startDate,
           employeeId,
           type: contractType,
@@ -90,10 +101,9 @@ exports.addContract = async (req, res) => {
 
         await employeeTemplate.save();
 
-        newContract.file = employeeTemplate._id; 
+        newContract.file = employeeTemplate._id;
         await newContract.save();
 
-        // Update Employee record with the new template reference
         await Employee.findByIdAndUpdate(employeeId, {
           $push: { templates: employeeTemplate._id },
         });
@@ -108,6 +118,7 @@ exports.addContract = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 
 
 
@@ -145,24 +156,21 @@ exports.extendContract = async (req, res) => {
 
     // PDF generation
     const pdfFileName = `contract_${newContract._id}.pdf`;
-
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     const relativeFilePath = `/uploads/${pdfFileName}`;
     const absoluteFilePath = path.join(__dirname, "..", "uploads", pdfFileName);
 
-    // PDF options with margins
     const pdfOptions = {
       format: "A4",
       border: {
-        top: "1in", // 1 inch margin
+        top: "1in",
         right: "0.75in",
         bottom: "1in",
         left: "0.75in",
       },
     };
 
-    // Generate PDF from the contract content (HTML) with margins
     pdf
       .create(existingContract.content, pdfOptions)
       .toFile(absoluteFilePath, async (err, result) => {
@@ -183,9 +191,11 @@ exports.extendContract = async (req, res) => {
 
         await newTemplate.save();
 
-        // Save the new contract
-        newContract.file = `${baseUrl}${relativeFilePath}`;
+        // Assign the ObjectId to the file field
+        newContract.file = newTemplate._id;
         await newContract.save();
+        existingContract.contractStatus = "extended";
+        await existingContract.save();
 
         res.status(201).json({
           message: "Contract extended successfully",

@@ -88,7 +88,6 @@ const employee = await Employee.findOne({ _id: employeeId });
 const contractDetails = {
   startDate,
   endDate,
-  contractType,
 };
 
   try{
@@ -106,8 +105,6 @@ const contractDetails = {
 
 
 
-
-
 async function useTemplate(
   templateId,
   employeeData,
@@ -116,15 +113,20 @@ async function useTemplate(
   req
 ) {
   try {
-    // Step 1: Fetch the template
     const template = await fetchTemplateById(templateId);
     const pdfUrl = template.filePath;
+    const logoPath = path.join(
+      __dirname,
+      "..",
+      "uploads",
+      path.basename(template.logoPath)
+    );
 
-    // Step 2: Extract text from the PDF using OCR
+    // Convert logo to Base64
+    const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
+    const logoDataUrl = `data:image/png;base64,${logoBase64}`;
 
     const extractedContent = await convertPdfToText(pdfUrl);
-
-    // Step 3: Replace placeholders in the template with employee details
     const modifiedContent = replaceTemplateFields(
       extractedContent,
       employeeData,
@@ -132,35 +134,32 @@ async function useTemplate(
       managerDetails
     );
 
-    // Step 4: Generate a new PDF with modified content
-    const newFileName = `employeeTemplate-${Date.now()}.pdf`;
+    const contentWithLogo = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="${logoDataUrl}" alt="Logo" style="max-width: 200px; height: auto;" />
+      </div>
+      ${modifiedContent}
+    `;
 
+    const newFileName = `employeeTemplate-${Date.now()}.pdf`;
     const baseUrl =
       process.env.BASE_URL || `${req.protocol}://${req.get("host")}`;
     const relativeFilePath = `/uploads/${newFileName}`;
     const absoluteFilePath = path.join(__dirname, "..", "uploads", newFileName);
 
-    // PDF options with margins
     const pdfOptions = {
       format: "A4",
       border: {
-        top: "1in", // 1 inch margin
+        top: "1in",
         right: "0.75in",
         bottom: "1in",
         left: "0.75in",
       },
     };
 
-    console.log("Generating pdf form  template >>>");
-    // Generate PDF from HTML content with margins
     await new Promise((resolve, reject) => {
-      console.log("Starting PDF creation...");
-      console.log("Content:", modifiedContent);
-      console.log("Options:", pdfOptions);
-      console.log("File Path:", absoluteFilePath);
-
       pdf
-        .create(modifiedContent, pdfOptions)
+        .create(contentWithLogo, pdfOptions)
         .toFile(absoluteFilePath, (err, res) => {
           if (err) {
             console.error("Error creating PDF:", err);
@@ -172,12 +171,8 @@ async function useTemplate(
         });
     });
 
-
-    // console.log("contract details", contractDetails);
-
-    // Step 5: Save the details in the DB
     const employeeTemplateData = {
-      content: modifiedContent,
+      content: contentWithLogo,
       filepath: `${baseUrl}${relativeFilePath}`,
       startDate: contractDetails.startDate,
       employeeId: employeeData._id,
@@ -185,24 +180,17 @@ async function useTemplate(
       endDate: contractDetails.endDate,
     };
 
-
     const newContract = new Contract({
       employee: employeeData._id,
       startDate: contractDetails.startDate,
       managingDirector: managerDetails._id,
       contractType: contractDetails.contractType,
       endDate: contractDetails.endDate,
-      content: modifiedContent,
-      superAdminId:req.userId
+      content: contentWithLogo,
+      superAdminId: req.userId,
     });
 
-
-
-    console.log('Saving template >>>')
     const savedTemplate = await saveEmployeeTemplate(employeeTemplateData);
-
-    // Add the new template to the employee's record
-
     newContract.file = savedTemplate._id;
     await newContract.save();
 
@@ -210,13 +198,13 @@ async function useTemplate(
     addToEmployee.templates.push(newContract._id);
     await addToEmployee.save();
 
-    
     return savedTemplate;
   } catch (error) {
     console.error("Error in useTemplate:", error);
     throw new Error("Failed to use template");
   }
 }
+
 
 
 

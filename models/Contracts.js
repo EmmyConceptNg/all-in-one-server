@@ -8,8 +8,8 @@ const contractSchema = new mongoose.Schema(
       required: true,
     },
     startDate: { type: Date, required: true },
-    endDate: { type: Date },
-    managingDirector: String,
+    endDate: { type: String },
+    mSnagingDirector: String,
     address: {
       postalCode: String,
       city: String,
@@ -18,12 +18,10 @@ const contractSchema = new mongoose.Schema(
     },
     contractType: {
       type: String,
-      enum: ["fulltime", "parttime"],
-      required: true,
     },
     contractStatus: {
       type: String,
-      enum: ["active", "terminated"],
+      enum: ["active", "terminated", "extended"],
       default: "active",
     },
     superAdminId: {

@@ -6,7 +6,7 @@ const EmployeeTemplateSchema = new mongoose.Schema({
   startDate: Date,
   employeeId: mongoose.Schema.Types.ObjectId,
   type: String,
-  endDate: Date,
+  endDate: String,
 });
 
 const EmployeeTemplate = mongoose.model(
