@@ -73,8 +73,9 @@ exports.getAllEmployeesBySuperAdmin = async (req, res) => {
         .status(403)
         .json({ message: "You do not have the required permissions" });
     }
+    
 
-    const user = await User.findOne(req.userId);
+    const user = await User.findById(req.userId);
 
     const userWorkspace = await Employee.findOne({ email: user.email });
 
