@@ -1,20 +1,75 @@
-const Employee = require('../models/Employee');
-const User = require('../models/User');
-const Workspace = require('../models/Workspace');
-const { getSuperAdminIdForStaff } = require('../utils/userUtils');
+const Employee = require("../models/Employee");
+const User = require("../models/User");
+const Workspace = require("../models/Workspace");
+const { getSuperAdminIdForStaff } = require("../utils/userUtils");
 
 exports.addEmployee = async (req, res) => {
-  const { 
-    role, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, dateOfBirth, 
-    countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, IBAN, BIC, entryDate, 
-    jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays, workspaceId } = req.body;
+  const {
+    role,
+    firstName,
+    middleName,
+    lastName,
+    address,
+    email,
+    ssn,
+    healthInsurance,
+    tin,
+    nationality,
+    taxClass,
+    dateOfBirth,
+    countryOfBirth,
+    placeOfBirth,
+    maritalStatus,
+    gender,
+    disabled,
+    children,
+    childAllowance,
+    religion,
+    IBAN,
+    BIC,
+    entryDate,
+    jobType,
+    anotherJob,
+    partTimeJob,
+    workingHoursPerWeek,
+    workingHoursPerMonth,
+    annualVacationDays,
+    workspaceId,
+  } = req.body;
 
   try {
     const newEmployee = new Employee({
-      superAdminId: req.userId, 
-      workspaceId, role, firstName, middleName, lastName, address, email, ssn, healthInsurance, tin, nationality, taxClass, 
-      dateOfBirth, countryOfBirth, placeOfBirth, maritalStatus, gender, disabled, children, childAllowance, religion, 
-      IBAN, BIC, entryDate, jobType, anotherJob, partTimeJob, workingHoursPerWeek, workingHoursPerMonth, annualVacationDays
+      superAdminId: req.userId,
+      workspaceId,
+      role,
+      firstName,
+      middleName,
+      lastName,
+      address,
+      email,
+      ssn,
+      healthInsurance,
+      tin,
+      nationality,
+      taxClass,
+      dateOfBirth,
+      countryOfBirth,
+      placeOfBirth,
+      maritalStatus,
+      gender,
+      disabled,
+      children,
+      childAllowance,
+      religion,
+      IBAN,
+      BIC,
+      entryDate,
+      jobType,
+      anotherJob,
+      partTimeJob,
+      workingHoursPerWeek,
+      workingHoursPerMonth,
+      annualVacationDays,
     });
 
     const savedEmployee = await newEmployee.save();
@@ -25,14 +80,20 @@ exports.addEmployee = async (req, res) => {
       password: email,
       role,
       isVerified: true,
-      superAdminId: req.userId
+      superAdminId: req.userId,
     });
 
     const savedUser = await newUser.save();
 
-    res.status(201).json({ message: 'Employee added successfully', employee: savedEmployee, user: savedUser });
+    res
+      .status(201)
+      .json({
+        message: "Employee added successfully",
+        employee: savedEmployee,
+        user: savedUser,
+      });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -41,15 +102,24 @@ exports.editEmployee = async (req, res) => {
   const updateFields = req.body;
 
   try {
-    const updatedEmployee = await Employee.findByIdAndUpdate(employeeId, updateFields, { new: true });
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      employeeId,
+      updateFields,
+      { new: true }
+    );
 
     if (!updatedEmployee) {
-      return res.status(404).json({ message: 'Employee not found' });
+      return res.status(404).json({ message: "Employee not found" });
     }
 
-    res.status(200).json({ message: 'Employee updated successfully', employee: updatedEmployee });
+    res
+      .status(200)
+      .json({
+        message: "Employee updated successfully",
+        employee: updatedEmployee,
+      });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -59,25 +129,29 @@ exports.deleteEmployee = async (req, res) => {
   try {
     await Employee.findByIdAndDelete(employeeId);
 
-    res.status(200).json({ message: 'Employee deleted successfully' });
+    res.status(200).json({ message: "Employee deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-
 exports.getAllEmployeesBySuperAdmin = async (req, res) => {
   try {
-
     const user = await User.findById(req.userId);
 
-    const userWorkspace = await Employee.findOne({ email: user.email });
+    const employee = await Employee.findOne({ email: user.email });
+    
 
     let employees = [];
+
     if (req.userRole === "manager" || req.userRole === "staff") {
-      employees = await Employee.find({
-        workspaceId: userWorkspace.workspaceId,
-      });
+      if (employee.workspaceId) {
+        employees = await Employee.find({
+          workspaceId: employee.workspaceId,
+        });
+      }
+    } else if (req.userRole === "super_admin") {
+      employees = await Employee.find({ superAdminId: req.userId });
     } else {
       employees = await Employee.find();
     }
