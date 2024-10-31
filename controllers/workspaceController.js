@@ -1,5 +1,6 @@
 const Workspace = require('../models/Workspace');
 const Employee = require('../models/Employee');
+const User = require('../models/User');
 
 exports.addWorkspace = async (req, res) => {
   const { workspaceName, branch, color } = req.body;
@@ -79,8 +80,9 @@ exports.getAllWorkspacesByCreator = async (req, res) => {
         workspaces = await Workspace.find({ createdBy: employee._id });
       }
     } else if (req.userRole === "staff") {
-      // Get workspaces where this staff member is part of the employees array
-      workspaces = await Workspace.find({ employees: req.userId });
+      const user = User.findOne({_id : req.userId});
+      const staff = await Employee.findOne({ email: user.email });
+      workspaces = await Workspace.find({ _id: staff.workspaceId });
     } else {
       // Get all workspaces for any other role
       workspaces = await Workspace.find();
