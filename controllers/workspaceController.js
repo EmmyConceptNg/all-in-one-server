@@ -55,27 +55,44 @@ exports.deleteWorkspace = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 exports.getAllWorkspacesByCreator = async (req, res) => {
   try {
     let workspaces = [];
 
-    if (req.userRole === 'super_admin') {
-      workspaces = await Workspace.find({ createdBy: req.userId });
-    } else if (req.userRole === 'manager') {
+    if (req.userRole === "super_admin") {
+      // Get all employees under a super admin
+      const employees = await Employee.find({ superAdminId: req.userId });
+
+      // Gather employee IDs with the 'manager' role
+      const managerIds = employees
+        .filter((employee) => employee.role === "manager")
+        .map((manager) => manager._id);
+
+      // Get workspaces created by the super admin or by managers under them
+      workspaces = await Workspace.find({
+        $or: [{ createdBy: req.userId }, { createdBy: { $in: managerIds } }],
+      });
+    } else if (req.userRole === "manager") {
       const employee = await Employee.findOne({ userId: req.userId });
       if (employee) {
-        workspaces = await Workspace.find({ createdBy: employee.superAdminId });
+        // Get workspaces created by this manager
+        workspaces = await Workspace.find({ createdBy: employee._id });
       }
-    } else if (req.userRole === 'owner' || req.userRole === 'staff') {
-      workspaces = await Workspace.find({ createdBy: req.userId });
+    } else if (req.userRole === "staff") {
+      // Get workspaces where this staff member is part of the employees array
+      workspaces = await Workspace.find({ employees: req.userId });
+    } else {
+      // Get all workspaces for any other role
+      workspaces = await Workspace.find();
     }
 
     res.status(200).json({ workspaces });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+
 exports.addEmployeeToWorkspace = async (req, res) => {
   const { employeeId, workspaceId } = req.params;
 
