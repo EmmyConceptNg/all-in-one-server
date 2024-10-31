@@ -4,6 +4,11 @@ const projectController = require('../controllers/projectController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 router.post('/add', authMiddleware(['super_admin', 'manager', 'staff']), projectController.addProject);
+router.get(
+  "/all",
+  authMiddleware(["super_admin", "owner", "manager", "staff"]),
+  projectController.getAllProjects
+);
 router.get('/superadmin', authMiddleware(['super_admin']), projectController.getAllProjectsBySuperAdmin);
 router.get('/getall/user', authMiddleware(['owner', 'manager', 'staff']), projectController.getAllProjectsByUser);
 router.put('/edit/:id', authMiddleware(['super_admin', 'manager', 'staff']), projectController.editProject);
