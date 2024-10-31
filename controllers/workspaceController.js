@@ -60,8 +60,10 @@ exports.getAllWorkspacesByCreator = async (req, res) => {
   try {
     let workspaces = [];
 
-    if (req.userRole === "super_admin") {
-      // Get all employees under a super admin
+    const user = await User.findById(req.userId);
+    const employee = await Employee.findOne({email : user.email})
+
+    if (user.role === "super_admin") {
       const employees = await Employee.find({ superAdminId: req.userId });
 
       // Gather employee IDs with the 'manager' role
@@ -73,16 +75,15 @@ exports.getAllWorkspacesByCreator = async (req, res) => {
       workspaces = await Workspace.find({
         $or: [{ createdBy: req.userId }, { createdBy: { $in: managerIds } }],
       });
-    } else if (req.userRole === "manager") {
-      const employee = await Employee.findOne({ userId: req.userId });
+    } else if (employee.role === "manager") {
       if (employee) {
-        // Get workspaces created by this manager
         workspaces = await Workspace.find({ createdBy: employee._id });
       }
-    } else if (req.userRole === "staff") {
+    } else if (employee.role === "staff") {
       const user = User.findOne({_id : req.userId});
-      const staff = await Employee.findOne({ email: user.email });
-      workspaces = await Workspace.find({ _id: staff.workspaceId });
+      if (employee && employee.workspaceId) {
+        workspaces = await Workspace.find({ _id: employee.workspaceId });
+      }
     } else {
       // Get all workspaces for any other role
       workspaces = await Workspace.find();
