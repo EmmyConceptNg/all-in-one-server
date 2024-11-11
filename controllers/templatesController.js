@@ -335,7 +335,7 @@ function replaceTemplateFields(
     },
     { placeholder: /\[street\]/g, value: employeeData.address.street },
     { placeholder: /\[city\]/g, value: employeeData.address.city },
-    { placeholder: /\[start date\]/g, value: contractDetails.startDate },
+    { placeholder: /\[start date\]/g, value: contractDetails.startDate || 'unlimited' },
     { placeholder: /\[end date\]/g, value: contractDetails.endDate },
     {
       placeholder: /\[dob\]/g,
