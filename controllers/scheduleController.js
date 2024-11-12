@@ -1,3 +1,4 @@
+const Employee = require('../models/Employee');
 const Schedule = require('../models/Schedule');
 const User = require('../models/User');
 const { getSuperAdminIdForStaff } = require('../utils/userUtils');
@@ -13,9 +14,14 @@ exports.addSchedule = async (req, res) => {
       return res.status(400).json({ message: 'Super Admin ID not found for the staff member' });
     }
 
+
+    const user = await User.findOne({_id : userId})
+
+    const employee = await Employee.findOne({email : user?.email})
+
     const newSchedule = new Schedule({
       userId: targetUserId,
-      superAdminId, 
+      superAdminId,
       scheduleType,
       startDate,
       endDate,
@@ -23,7 +29,7 @@ exports.addSchedule = async (req, res) => {
       endTime,
       occurrence,
       notes,
-      workspaceId
+      workspaceId: employee?.workspaceId,
     });
 
     await newSchedule.save();
