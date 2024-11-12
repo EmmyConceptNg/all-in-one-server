@@ -115,6 +115,11 @@ exports.addEmployeeToWorkspace = async (req, res) => {
     workspace.employees.push(employee);
     await workspace.save();
 
+
+    employee.workspaceId = workspace._id
+    await employee.save()
+
+
     res.status(200).json({ message: 'Employee added to workspace successfully', workspace });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
