@@ -120,7 +120,7 @@ exports.addEmployeeToWorkspace = async (req, res) => {
     await employee.save()
 
 
-    res.status(200).json({ message: 'Employee added to workspace successfully', workspace });
+    res.status(200).json({ message: 'Employee added to workspace successfully', workspace, employee });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
