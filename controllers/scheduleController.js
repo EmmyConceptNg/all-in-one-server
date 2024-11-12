@@ -20,7 +20,7 @@ exports.addSchedule = async (req, res) => {
     const employee = await Employee.findOne({email : user?.email})
 
     if(!employee){
-      return res.status(400).json({message : "Employee does not belong to a workspace", employee})
+      return res.status(400).json({message : "Employee does not belong to a workspace", user})
     }
 
     const newSchedule = new Schedule({
