@@ -16,9 +16,12 @@ async function getAllMappedDetails(req, res) {
     const regularEmployees = employees.filter(employee => employee.role === 'staff');
     const projects = await Project.find({ superAdminId: req.userId });
     const contracts = await Contract.find({ superAdminId: req.userId }).populate('employee');
-    const timeEntries = await TimeTracker.find({ userId: { $in: userObjects.map(user => user._id) }});
+    const timeEntries = await TimeTracker.find({ userId: { $in: userObjects.map(user => user?._id) }});
+    
+
 
     for (const manager of managers) {
+      // console.log(managers);
       const managerContracts = await Contract.find({ employee: manager._id });
       const managerProjects = await Project.find({ createdBy: manager._id });
       const managerSchedules = await Schedule.find({ userId: manager._id });
