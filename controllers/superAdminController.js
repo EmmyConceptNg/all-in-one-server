@@ -25,7 +25,12 @@ async function getAllMappedDetails(req, res) {
       const managerContracts = await Contract.find({ employee: manager?._id });
       const managerProjects = await Project.find({ createdBy: manager?._id });
       const managerSchedules = await Schedule.find({ userId: manager?._id });
-      const managerShifts = shifts.filter(shift => String(shift?.userId?._id) === String(manager?._id));
+      const managerShifts = shifts.filter(shift => {
+        if(shift.userId != null){
+console.log(shift);
+          String(shift?.userId?._id) === String(manager?._id)
+        }
+      });
 
       manager.contracts = managerContracts;
       manager.projects = managerProjects;
@@ -39,8 +44,11 @@ async function getAllMappedDetails(req, res) {
       const employeeProjects = await Project.find({ createdBy: employee?._id });
       const employeeSchedules = await Schedule.find({ userId: employee?._id });
       const employeeShifts = shifts.filter(shift => {
-        
-        String(shift?.userId?._id) === String(employee?._id)});
+        if(shift.userId != null){
+          console.log(shift)
+        String(shift?.userId?._id) === String(employee?._id)
+        }
+      });
 
       employee.contracts = employeeContracts;
       employee.projects = employeeProjects;
