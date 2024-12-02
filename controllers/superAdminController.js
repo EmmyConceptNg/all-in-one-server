@@ -21,7 +21,7 @@ async function getAllMappedDetails(req, res) {
     const timeEntries = await TimeTracker.find({ userId: { $in: userObjects.map(user => user?._id) }});
 
     for (const manager of managers) {
-      // console.log(managers);
+      
       const managerContracts = await Contract.find({ employee: manager._id });
       const managerProjects = await Project.find({ createdBy: manager._id });
       const managerSchedules = await Schedule.find({ userId: manager._id });
@@ -34,10 +34,13 @@ async function getAllMappedDetails(req, res) {
     }
 
     for (const employee of regularEmployees) {
-      const employeeContracts = await Contract.find({ employee: employee._id });
-      const employeeProjects = await Project.find({ createdBy: employee._id });
-      const employeeSchedules = await Schedule.find({ userId: employee._id });
-      const employeeShifts = shifts.filter(shift => String(shift.userId._id) === String(employee._id));
+      // console.log(employee);
+      const employeeContracts = await Contract.find({ employee: employee?._id });
+      const employeeProjects = await Project.find({ createdBy: employee?._id });
+      const employeeSchedules = await Schedule.find({ userId: employee?._id });
+      const employeeShifts = shifts.filter(shift => {
+        
+        String(shift.userId?._id) === String(employee?._id)});
 
       employee.contracts = employeeContracts;
       employee.projects = employeeProjects;
