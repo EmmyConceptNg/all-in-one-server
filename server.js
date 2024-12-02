@@ -13,6 +13,7 @@ const contractRoutes = require("./routes/contractRoutes.js");
 const templateRoutes = require("./routes/templateRoutes.js");
 const superAdminRoutes = require("./routes/superAdminRoutes.js");
 const notificationRoutes = require("./routes/notificationRoutes");
+const shiftRoutes = require("./routes/shiftRoutes");
 
 const path = require("path");
 
@@ -60,6 +61,7 @@ app.use("/api/contracts", contractRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/super_admin", superAdminRoutes);
 app.use("/api/notification", notificationRoutes);
+app.use("/api/shift", shiftRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
