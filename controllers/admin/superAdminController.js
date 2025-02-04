@@ -210,6 +210,7 @@ exports.getSingleSuperAdmin = async (req, res) => {
         projectCount,
         contractCount,
         shiftCount,
+        employees,
       },
     });
   } catch (error) {
