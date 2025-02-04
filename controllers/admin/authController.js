@@ -41,26 +41,28 @@ exports.register = async (req, res) => {
     let user = await Admin.findOne({ email });
     if (user) return res.status(400).json({ msg: "User already exists" });
 
-    try {
+    // Hash the password before saving
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
+    try {
       user = new Admin({
         firstName,
         lastName,
         email,
-        password,
+        password: hashedPassword, // Store hashed password
         role: "admin",
       });
+
       await user.save();
 
-      res
-        .status(200)
-        .json({ msg: "Registration successful. " });
+      res.status(200).json({ msg: "Registration successful." });
     } catch (error) {
       res
         .status(500)
-        .json({ msg: "Failed to crete user. Please try again", error });
+        .json({ msg: "Failed to create user. Please try again", error });
     }
   } catch (error) {
     res.status(500).json({ msg: "Server error" });
   }
-};  
+};
