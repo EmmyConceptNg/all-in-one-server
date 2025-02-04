@@ -12,6 +12,7 @@ const timeTrackerRoutes = require("./routes/timeTrackerRoutes.js");
 const contractRoutes = require("./routes/contractRoutes.js");
 const templateRoutes = require("./routes/templateRoutes.js");
 const superAdminRoutes = require("./routes/superAdminRoutes.js");
+const adminRoutes = require("./routes/adminRoutes.js");
 const notificationRoutes = require("./routes/notificationRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
 
@@ -52,6 +53,7 @@ app.use(
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/employees", employeeRoutes);

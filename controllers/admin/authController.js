@@ -28,3 +28,40 @@ exports.login = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+
+exports.register = async (req, res) => {
+  const { firstName, lastName, email, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ msg: "Passwords do not match" });
+  }
+
+  try {
+    let user = await Admin.findOne({ email });
+    if (user) return res.status(400).json({ msg: "User already exists" });
+
+    try {
+
+      user = new Admin({
+        firstName,
+        lastName,
+        email,
+        password,
+        role: "admin",
+        otp,
+      });
+      await user.save();
+
+      res
+        .status(200)
+        .json({ msg: "Registration successful. " });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ msg: "Failed to send OTP. Please try again later." });
+    }
+  } catch (error) {
+    res.status(500).json({ msg: "Server error" });
+  }
+};  
