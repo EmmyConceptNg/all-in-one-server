@@ -141,7 +141,7 @@ exports.enableSuperAdmin = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Super Admin and associated employees disabled successfully",
+      message: "Super Admin and associated employees enabled successfully",
     });
   } catch (error) {
     await session.abortTransaction();
