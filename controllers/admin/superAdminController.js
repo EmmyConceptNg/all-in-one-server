@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Contract = require("../../models/Contracts");
 const Employee = require("../../models/Employee");
 const Project = require("../../models/Project");
