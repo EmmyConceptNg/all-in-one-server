@@ -8,3 +8,5 @@ router.post("/clients",authAdminMiddleware(['admin']), getAllSuperAdmin);
 router.post("/clients/disable",authAdminMiddleware(['admin']), disableSuperAdmin);
 router.post("/clients/enable",authAdminMiddleware(['admin']), enableSuperAdmin);
 router.post("/clients/:id",authAdminMiddleware(['admin']), getSingleSuperAdmin);
+
+module.exports = router;
