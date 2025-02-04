@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
     } catch (error) {
       res
         .status(500)
-        .json({ msg: "Failed to send OTP. Please try again later." });
+        .json({ msg: "Failed to crete user. Please try again", error });
     }
   } catch (error) {
     res.status(500).json({ msg: "Server error" });
