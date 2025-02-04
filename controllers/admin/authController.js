@@ -49,7 +49,6 @@ exports.register = async (req, res) => {
         email,
         password,
         role: "admin",
-        otp,
       });
       await user.save();
 
