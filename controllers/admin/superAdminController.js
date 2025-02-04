@@ -6,37 +6,54 @@ const Shifts = require("../../models/Shifts");
 const User = require("../../models/User");
 const Workspace = require("../../models/Workspace");
 
-exports.getAllSuperAdmin = async(req, res) => {
-      try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+exports.getAllSuperAdmin = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchQuery = req.query.search || ""; // Get search query
+    const status = req.query.status; // Get enabled/disabled filter
+    const skip = (page - 1) * limit;
 
-        const [superAdmins, total] = await Promise.all([
-          User.find({ role: "super_admin" }).skip(skip).limit(limit).lean(),
-          User.countDocuments({ role: "super_admin" }),
-        ]);
+    // Base filter: Only fetch super admins
+    let filter = {
+      role: "super_admin",
+      $or: [
+        { firstName: { $regex: searchQuery, $options: "i" } },
+        { lastName: { $regex: searchQuery, $options: "i" } },
+      ],
+    };
 
-        res.status(200).json({
-          success: true,
-          data: superAdmins,
-          pagination: {
-            total,
-            totalPages: Math.ceil(total / limit),
-            currentPage: page,
-            limit,
-          },
-        });
-      } catch (error) {
-        res.status(500).json({
-          success: false,
-          message: "Server Error",
-          error: error.message,
-        });
-      }
+    // Apply enabled/disabled filter if provided
+    if (status === "enabled") {
+      filter.disabled = false;
+    } else if (status === "disabled") {
+      filter.disabled = true;
+    }
 
-    
-}
+    const [superAdmins, total] = await Promise.all([
+      User.find(filter).skip(skip).limit(limit).lean(),
+      User.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: superAdmins,
+      pagination: {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+        limit,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.disableSuperAdmin = async (req, res) => {
   const session = await mongoose.startSession();

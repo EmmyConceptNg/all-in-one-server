@@ -50,9 +50,8 @@ const employeeSchema = new mongoose.Schema({
   workingHoursPerWeek: Number,
   workingHoursPerMonth: Number,
   annualVacationDays: Number,
-  templates : [
-    String,
-  ]
+  templates: [String],
+  disabled: { type: Boolean, default: false },
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);
