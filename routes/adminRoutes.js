@@ -8,8 +8,8 @@ const authAdminMiddleware = require("../middlewares/authAdminMiddleware");
 router.post("/login", authController.login);
 router.post("/register", authController.register);
 router.get("/clients",authAdminMiddleware(['admin']), getAllSuperAdmin);
-router.get("/clients/disable",authAdminMiddleware(['admin']), disableSuperAdmin);
-router.get("/clients/enable",authAdminMiddleware(['admin']), enableSuperAdmin);
+router.get("/clients/disable/:id",authAdminMiddleware(['admin']), disableSuperAdmin);
+router.get("/clients/enable/:id",authAdminMiddleware(['admin']), enableSuperAdmin);
 router.get("/clients/:id",authAdminMiddleware(['admin']), getSingleSuperAdmin);
 
 module.exports = router;
