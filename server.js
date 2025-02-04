@@ -30,6 +30,7 @@ app.use(json());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
+  "https://localhost:3000",
   "http://localhost:3001",
   "https://almedin-project.vercel.app",
 ];
@@ -37,6 +38,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
+      console.log("Request Origin: ", origin); // Log the origin to debug
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -49,6 +51,7 @@ app.use(
     credentials: true,
   })
 );
+
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
