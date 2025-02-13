@@ -33,6 +33,7 @@ const allowedOrigins = [
   "https://localhost:3000",
   "http://localhost:3001",
   "https://almedin-project.vercel.app",
+  "https://staff360.de"
 ];
 
 app.use(
