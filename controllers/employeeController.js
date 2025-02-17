@@ -125,11 +125,47 @@ exports.editEmployee = async (req, res) => {
 
 exports.deleteEmployee = async (req, res) => {
   const employeeId = req.params.id;
+  const { deletionType } = req.body; // 'retain' or 'remove'
 
   try {
-    await Employee.findByIdAndDelete(employeeId);
+    const employee = await Employee.findById(employeeId);
+    if (!employee) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
 
-    res.status(200).json({ message: "Employee deleted successfully" });
+    if (deletionType === 'retain') {
+      // Set employee as disabled but retain their data
+      await Employee.findByIdAndUpdate(employeeId, { 
+        disabled: true 
+      });
+      
+      // Disable associated user account
+      await User.findOneAndUpdate(
+        { email: employee.email },
+        { disabled: true }
+      );
+
+    } else if (deletionType === 'remove') {
+      // Delete employee and all associated data
+      await Employee.findByIdAndDelete(employeeId);
+      
+      // Delete associated user account
+      await User.findOneAndDelete({ email: employee.email });
+      
+      // Remove employee from all workspaces
+      await Workspace.updateMany(
+        { employees: employeeId },
+        { $pull: { employees: employeeId } }
+      );
+    } else {
+      return res.status(400).json({ message: "Invalid deletion type" });
+    }
+
+    res.status(200).json({ 
+      message: deletionType === 'retain' 
+        ? "Employee disabled successfully" 
+        : "Employee deleted successfully" 
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
