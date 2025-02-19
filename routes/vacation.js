@@ -3,14 +3,14 @@ const router = express.Router();
 const VacationController = require('../controllers/vacationController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
-router.post('/request', 
-  authMiddleware(['staff', 'manager']), 
+router.post('/create', 
+  authMiddleware(['staff', 'manager', 'super_admin']), 
   VacationController.requestVacation
 );
 
-router.put('/:id/status', 
-  authMiddleware(['super_admin', 'manager']), 
-  VacationController.updateVacationStatus
+router.put('/:id', 
+  authMiddleware(['super_admin', 'manager', 'staff']), 
+  VacationController.updateVacation
 );
 
 router.get('/', 

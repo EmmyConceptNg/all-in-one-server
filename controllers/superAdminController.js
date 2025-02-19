@@ -5,7 +5,8 @@ const User = require('../models/User');
 const Project = require('../models/Project');
 const Contract = require('../models/Contracts');
 const TimeTracker = require('../models/TimeTracker');
-const Shift = require('../models/Shifts'); 
+const Shift = require('../models/Shifts');
+const Vacation = require('../models/Vacation'); // Add this line
 
 async function getAllMappedDetails(req, res) {
   try {
@@ -19,6 +20,7 @@ async function getAllMappedDetails(req, res) {
     const contracts = await Contract.find({ superAdminId: req.userId }).populate('employee');
     const shifts = await Shift.find({ superAdminId: req.userId }).populate('userId', 'firstName lastName').populate('workspaceId', 'name');
     const timeEntries = await TimeTracker.find({ userId: { $in: userObjects.map(user => user?._id) }});
+    const vacations = await Vacation.find({ superAdminId: req.userId }).populate('userId', 'firstName lastName'); // Add this line
 
     for (const manager of managers) {
       
@@ -31,11 +33,15 @@ console.log(shift);
           String(shift?.userId?._id) === String(manager?._id)
         }
       });
-
+      const managerVacations = vacations.filter(vacation => 
+        vacation.userId && String(vacation.userId._id) === String(manager._id)
+      );
+      
       manager.contracts = managerContracts;
       manager.projects = managerProjects;
       manager.schedules = managerSchedules;
       manager.shifts = managerShifts;
+      manager.vacations = managerVacations; // Add this line
     }
 
     for (const employee of regularEmployees) {
@@ -49,11 +55,15 @@ console.log(shift);
         String(shift?.userId?._id) === String(employee?._id)
         }
       });
+      const employeeVacations = vacations.filter(vacation => 
+        vacation.userId && String(vacation.userId._id) === String(employee._id)
+      );
 
       employee.contracts = employeeContracts;
       employee.projects = employeeProjects;
       employee.schedules = employeeSchedules;
       employee.shifts = employeeShifts;
+      employee.vacations = employeeVacations; // Add this line
     }
 
     res.status(200).json({
@@ -65,7 +75,8 @@ console.log(shift);
       projects,
       contracts,
       shifts,
-      timeEntries
+      timeEntries,
+      vacations // Add this line
     });
 
   } catch (error) {

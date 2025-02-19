@@ -15,6 +15,7 @@ const superAdminRoutes = require("./routes/superAdminRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 const notificationRoutes = require("./routes/notificationRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
+const vacationRoutes = require("./routes/vacation");
 
 const path = require("path");
 
@@ -68,6 +69,7 @@ app.use("/api/templates", templateRoutes);
 app.use("/api/super_admin", superAdminRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/shift", shiftRoutes);
+app.use("/api/vacation", vacationRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

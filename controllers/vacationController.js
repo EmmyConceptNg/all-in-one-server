@@ -1,12 +1,16 @@
 const Vacation = require('../models/Vacation');
 const Employee = require('../models/Employee');
 const { calculateWorkingDays } = require('../utils/dateUtils');
+const User = require('../models/User');
 
 exports.requestVacation = async (req, res) => {
   const { startDate, endDate, notes } = req.body;
 
+  
+
   try {
-    const employee = await Employee.findOne({ userId: req.userId });
+    const user = await User.findOne({ _id: req.userId });
+    const employee = await Employee.findOne({ email: user?.email });
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
     }
@@ -20,7 +24,7 @@ exports.requestVacation = async (req, res) => {
     }
 
     const newVacation = new Vacation({
-      userId: req.userId,
+      userId: user?._id,
       superAdminId: employee.superAdminId,
       workspaceId: employee.workspaceId,
       startDate,
@@ -40,14 +44,15 @@ exports.requestVacation = async (req, res) => {
   }
 };
 
-exports.updateVacationStatus = async (req, res) => {
+exports.updateVacation = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const updates = req.body;
 
   try {
+    // Find the vacation first
     const vacation = await Vacation.findOne({ 
       _id: id,
-      superAdminId: req.userId
+      [req.userRole === 'super_admin' ? 'superAdminId' : 'userId']: req.userId
     });
 
     if (!vacation) {
@@ -56,12 +61,40 @@ exports.updateVacationStatus = async (req, res) => {
       });
     }
 
-    vacation.status = status;
-    await vacation.save();
+    // If dates are being updated, recalculate working days
+    if (updates.startDate || updates.endDate) {
+      const startDate = updates.startDate || vacation.startDate;
+      const endDate = updates.endDate || vacation.endDate;
+      updates.workingDaysCount = calculateWorkingDays(startDate, endDate);
+
+      // Check if new dates exceed vacation allowance
+
+      const user = await User.findOne({ _id: vacation.userId });
+      const employee = await Employee.findOne({ email: user?.email });
+      if (updates.workingDaysCount > employee.annualVacationDays) {
+        return res.status(400).json({ 
+          message: 'Updated vacation days would exceed annual allowance' 
+        });
+      }
+    }
+
+    // Only super_admin or manager can update status
+    if (updates.status && req.userRole === 'staff') {
+      return res.status(403).json({ 
+        message: 'Staff cannot update vacation status' 
+      });
+    }
+
+    // Update the vacation with all provided fields
+    const updatedVacation = await Vacation.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true }
+    ).populate('userId', 'firstName lastName');
 
     res.status(200).json({ 
-      message: 'Vacation status updated successfully', 
-      vacation 
+      message: 'Vacation updated successfully', 
+      vacation: updatedVacation 
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
