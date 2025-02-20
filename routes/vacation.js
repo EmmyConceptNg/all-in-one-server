@@ -13,7 +13,7 @@ router.put('/:id',
   VacationController.updateVacation
 );
 
-router.get('/', 
+router.get('/:userId', 
   authMiddleware(['super_admin', 'manager', 'staff']), 
   VacationController.getVacations
 );

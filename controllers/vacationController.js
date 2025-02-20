@@ -103,11 +103,9 @@ exports.updateVacation = async (req, res) => {
 
 exports.getVacations = async (req, res) => {
   try {
-    const query = req.userRole === 'super_admin' 
-      ? { superAdminId: req.userId }
-      : { userId: req.userId };
+    const {userId} = req.params
 
-    const vacations = await Vacation.find(query)
+    const vacations = await Vacation.find({userId})
       .populate('userId', 'firstName lastName')
       .sort({ startDate: -1 });
 
