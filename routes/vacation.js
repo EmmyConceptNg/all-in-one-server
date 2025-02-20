@@ -13,8 +13,8 @@ router.put('/:id',
   VacationController.updateVacation
 );
 
-
-router.get('/:userId?', 
+// Simplified route that uses query parameters instead
+router.get('/', 
   authMiddleware(['super_admin', 'manager', 'staff']), 
   VacationController.getVacations
 );
