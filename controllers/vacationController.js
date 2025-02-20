@@ -103,37 +103,58 @@ exports.updateVacation = async (req, res) => {
 
 exports.getVacations = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.query;
     let query = {};
-    let vacations = [];
 
     switch (req.userRole) {
       case 'super_admin':
-        // Get all vacations for the superAdmin's employees and their own
-        query = { superAdminId: req.userId };
         if (userId) {
-          query = { ...query, userId };
+          query.userId = userId;
+          query.superAdminId = req.userId;
+        } else {
+          // Get both super admin's vacations and their staff's vacations
+          const user = await User.findById(req.userId);
+          query = {
+            $or: [
+              { superAdminId: req.userId }, // Get all staff vacations
+              { userId: req.userId }         // Get super admin's own vacations
+            ]
+          };
         }
         break;
 
       case 'manager':
-        // Get vacations for staff under the manager's workspace
         const manager = await Employee.findOne({ email: req.user.email });
         if (!manager?.workspaceId) {
           return res.status(404).json({ message: 'Manager workspace not found' });
         }
         
-        const staffInWorkspace = await Employee.find({ 
-          workspaceId: manager.workspaceId,
-          role: 'staff'
-        });
-        
-        const staffIds = staffInWorkspace.map(staff => staff._id);
-        query = { userId: userId ? userId : { $in: staffIds } };
+        if (userId) {
+          // Verify the requested user is in manager's workspace
+          const employee = await Employee.findOne({
+            _id: userId,
+            workspaceId: manager.workspaceId
+          });
+          if (!employee) {
+            return res.status(403).json({ message: 'Unauthorized to view this employee\'s vacations' });
+          }
+          query.userId = userId;
+        } else {
+          // Get both manager's vacations and their staff's vacations
+          const staffInWorkspace = await Employee.find({ 
+            workspaceId: manager.workspaceId,
+            role: 'staff'
+          });
+          query = {
+            $or: [
+              { userId: { $in: staffInWorkspace.map(staff => staff._id) } }, // Staff vacations
+              { userId: req.userId }                                         // Manager's own vacations
+            ]
+          };
+        }
         break;
 
       case 'staff':
-        // Get only their own vacations
         query = { userId: req.userId };
         break;
 
@@ -141,7 +162,7 @@ exports.getVacations = async (req, res) => {
         return res.status(403).json({ message: 'Unauthorized access' });
     }
 
-    vacations = await Vacation.find(query)
+    const vacations = await Vacation.find(query)
       .populate('userId', 'firstName lastName email')
       .populate('workspaceId', 'name')
       .sort({ startDate: -1 });
