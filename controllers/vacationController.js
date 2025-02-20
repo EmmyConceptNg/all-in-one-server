@@ -4,12 +4,12 @@ const { calculateWorkingDays } = require('../utils/dateUtils');
 const User = require('../models/User');
 
 exports.requestVacation = async (req, res) => {
-  const { startDate, endDate, notes } = req.body;
+  const { startDate, endDate, notes, userId } = req.body;
 
   
 
   try {
-    const user = await User.findOne({ _id: req.userId });
+    const user = await User.findOne({ _id: userId });
     const employee = await Employee.findOne({ email: user?.email });
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
