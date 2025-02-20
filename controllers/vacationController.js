@@ -103,13 +103,53 @@ exports.updateVacation = async (req, res) => {
 
 exports.getVacations = async (req, res) => {
   try {
-    const {userId} = req.params
+    const { userId } = req.params;
+    let query = {};
+    let vacations = [];
 
-    const vacations = await Vacation.find({userId})
-      .populate('userId', 'firstName lastName')
+    switch (req.userRole) {
+      case 'super_admin':
+        // Get all vacations for the superAdmin's employees and their own
+        query = { superAdminId: req.userId };
+        if (userId) {
+          query = { ...query, userId };
+        }
+        break;
+
+      case 'manager':
+        // Get vacations for staff under the manager's workspace
+        const manager = await Employee.findOne({ email: req.user.email });
+        if (!manager?.workspaceId) {
+          return res.status(404).json({ message: 'Manager workspace not found' });
+        }
+        
+        const staffInWorkspace = await Employee.find({ 
+          workspaceId: manager.workspaceId,
+          role: 'staff'
+        });
+        
+        const staffIds = staffInWorkspace.map(staff => staff._id);
+        query = { userId: userId ? userId : { $in: staffIds } };
+        break;
+
+      case 'staff':
+        // Get only their own vacations
+        query = { userId: req.userId };
+        break;
+
+      default:
+        return res.status(403).json({ message: 'Unauthorized access' });
+    }
+
+    vacations = await Vacation.find(query)
+      .populate('userId', 'firstName lastName email')
+      .populate('workspaceId', 'name')
       .sort({ startDate: -1 });
 
-    res.status(200).json({ vacations });
+    res.status(200).json({ 
+      vacations,
+      count: vacations.length
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
