@@ -11,13 +11,13 @@ exports.requestVacation = async (req, res) => {
   try {
     const user = await User.findOne({ _id: userId });
     const employee = await Employee.findOne({ email: user?.email });
-    if (!employee) {
-      return res.status(404).json({ message: 'Employee not found' });
-    }
+    // if (!employee) {
+    //   return res.status(404).json({ message: 'Employee not found' });
+    // }
 
     const workingDays = calculateWorkingDays(startDate, endDate);
     
-    if (workingDays > employee.annualVacationDays) {
+    if (employee && workingDays > employee?.annualVacationDays) {
       return res.status(400).json({ 
         message: 'Requested vacation days exceed your annual allowance' 
       });
@@ -25,8 +25,8 @@ exports.requestVacation = async (req, res) => {
 
     const newVacation = new Vacation({
       userId: user?._id,
-      superAdminId: employee.superAdminId,
-      workspaceId: employee.workspaceId,
+      superAdminId: employee ? employee?.superAdminId : user?.superAdminId,
+      workspaceId: employee?.workspaceId,
       startDate,
       endDate,
       workingDaysCount: workingDays,
