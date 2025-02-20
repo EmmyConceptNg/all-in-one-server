@@ -13,7 +13,6 @@ const vacationSchema = new mongoose.Schema({
   workspaceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Workspace',
-    required: true
   },
   startDate: {
     type: Date,
