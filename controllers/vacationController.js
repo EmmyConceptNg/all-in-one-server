@@ -71,7 +71,7 @@ exports.updateVacation = async (req, res) => {
 
       const user = await User.findOne({ _id: vacation.userId });
       const employee = await Employee.findOne({ email: user?.email });
-      if (updates.workingDaysCount > employee.annualVacationDays) {
+      if (updates.workingDaysCount > employee?.annualVacationDays) {
         return res.status(400).json({ 
           message: 'Updated vacation days would exceed annual allowance' 
         });
