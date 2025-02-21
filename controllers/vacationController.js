@@ -52,7 +52,7 @@ exports.updateVacation = async (req, res) => {
     // Find the vacation first
     const vacation = await Vacation.findOne({ 
       _id: id,
-      [req.userRole === 'super_admin' ? 'superAdminId' : 'userId']: req.userId
+   
     });
 
     if (!vacation) {
