@@ -10,7 +10,7 @@ exports.createEvent = async (req, res) => {
       endDate,
       status,
       progressInPercentage: calculateProgress(status),
-      userId: req.user._id  // Add userId from authenticated user
+      userId: req.userId  // Add userId from authenticated user
     });
 
     await event.save();
@@ -29,7 +29,7 @@ exports.updateEvent = async (req, res) => {
       updates.progressInPercentage = calculateProgress(updates.status);
     }
 
-    const event = await Event.findOne({ _id: id, userId: req.user._id });  // Check ownership
+    const event = await Event.findOne({ _id: id, userId: req.userId });  // Check ownership
     
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
@@ -48,7 +48,7 @@ exports.deleteEvent = async (req, res) => {
   try {
     const event = await Event.findOneAndDelete({
       _id: req.params.id,
-      userId: req.user._id  // Check ownership
+      userId: req.userId  // Check ownership
     });
 
     if (!event) {
