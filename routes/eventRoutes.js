@@ -3,6 +3,13 @@ const router = express.Router();
 const eventController = require('../controllers/eventController');
 const authMiddleware = require('../middlewares/authMiddleware');
 
+// Get authenticated user's events
+router.get(
+  '/',
+  authMiddleware(['super_admin', 'manager', 'staff']),
+  eventController.getUserEvents
+);
+
 // Create event
 router.post(
   '/create',
@@ -23,5 +30,7 @@ router.delete(
   authMiddleware(['super_admin', 'manager', 'staff']),
   eventController.deleteEvent
 );
+
+
 
 module.exports = router;

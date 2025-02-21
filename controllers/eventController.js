@@ -8,7 +8,7 @@ exports.createEvent = async (req, res) => {
       name,
       startDate,
       endDate,
-      status,
+      status: status || 'STARTED',
       progressInPercentage: calculateProgress(status),
       userId: req.userId  // Add userId from authenticated user
     });
@@ -61,8 +61,32 @@ exports.deleteEvent = async (req, res) => {
   }
 };
 
+exports.getUserEvents = async (req, res) => {
+  try {
+    const query = { userId: req.userId };
+    
+    // Add status filter if provided in query params
+    if (req.query.status) {
+      query.status = req.query.status;
+    }
+
+    const events = await Event.find(query)
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .select('-userId'); // Exclude userId from response
+    
+    res.status(200).json({ 
+      events,
+      count: events.length
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 function calculateProgress(status) {
   switch (status) {
+    case 'STARTED':
+      return 0;
     case 'IN_PROGRESS':
       return 50;
     case 'COMPLETED':
