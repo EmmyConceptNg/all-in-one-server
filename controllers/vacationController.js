@@ -180,11 +180,11 @@ exports.deleteVacation = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const query = req.userRole === 'super_admin'
-      ? { _id: id, superAdminId: req.userId }
-      : { _id: id, userId: req.userId, status: 'pending' };
+    // const query = req.userRole === 'super_admin'
+    //   ? { _id: id, superAdminId: req.userId }
+    //   : { _id: id, userId: req.userId, status: 'pending' };
 
-    const deletedVacation = await Vacation.findOneAndDelete(query);
+    const deletedVacation = await Vacation.findOneAndDelete({_id:id});
 
     if (!deletedVacation) {
       return res.status(404).json({ 
