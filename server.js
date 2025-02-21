@@ -16,7 +16,7 @@ const adminRoutes = require("./routes/adminRoutes.js");
 const notificationRoutes = require("./routes/notificationRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
 const vacationRoutes = require("./routes/vacation");
-const vacationRoutes = require("./routes/eventRoutes");
+const eventRoutes = require("./routes/eventRoutes");
 
 const path = require("path");
 

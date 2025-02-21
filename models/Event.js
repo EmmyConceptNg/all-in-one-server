@@ -23,6 +23,11 @@ const eventSchema = new mongoose.Schema({
     min: 0,
     max: 100,
     default: 0
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 }, { timestamps: true });
 
