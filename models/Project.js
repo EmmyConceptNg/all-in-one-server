@@ -12,10 +12,19 @@ const projectSchema = new mongoose.Schema({
   managers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   tasks: [String],
   projectDescription: String,
-  status: String,
+  status: { 
+    type: String,
+    enum: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD', 'CANCELLED'],
+    default: 'NOT_STARTED'
+  },
   budget: Number,
   skillsRequired: [String],
-  progress: Number
+  progress: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 0
+  }
 });
 
 const Project = mongoose.model('Project', projectSchema);

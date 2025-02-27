@@ -18,6 +18,7 @@ const shiftRoutes = require("./routes/shiftRoutes");
 const vacationRoutes = require("./routes/vacation");
 const sickLeaveRoutes = require("./routes/sickLeave");
 const eventRoutes = require("./routes/eventRoutes");
+const milestoneRoutes = require("./routes/milestoneRoutes");
 
 const path = require("path");
 
@@ -74,6 +75,7 @@ app.use("/api/shift", shiftRoutes);
 app.use("/api/vacation", vacationRoutes);
 app.use("/api/sick-leave", sickLeaveRoutes);
 app.use("/api/event", eventRoutes);
+app.use("/api/milestones", milestoneRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
