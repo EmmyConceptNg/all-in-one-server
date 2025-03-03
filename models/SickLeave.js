@@ -22,14 +22,18 @@ const sickLeaveSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  dates: [{
+    type: Date,
+    required: true
+  }],
+  workingDaysCount: {
+    type: Number,
+    required: true
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
-  },
-  workingDaysCount: {
-    type: Number,
-    required: true
   },
   notes: String
 }, { timestamps: true });

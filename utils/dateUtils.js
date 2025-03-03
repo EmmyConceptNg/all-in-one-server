@@ -24,3 +24,20 @@ exports.generateDateArray = (startDate, endDate) => {
 
   return dates;
 };
+
+exports.getWorkingDatesArray = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const dates = [];
+  
+  let current = new Date(start);
+  while (current <= end) {
+    // Skip weekends (0 = Sunday, 6 = Saturday)
+    if (current.getDay() !== 0 && current.getDay() !== 6) {
+      dates.push(new Date(current));
+    }
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return dates;
+};

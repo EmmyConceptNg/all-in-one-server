@@ -1,22 +1,17 @@
-
 const Employee = require('../models/Employee');
-const { calculateWorkingDays } = require('../utils/dateUtils');
+const { calculateWorkingDays, getWorkingDatesArray } = require('../utils/dateUtils');
 const User = require('../models/User');
 const SickLeave = require('../models/SickLeave');
 
 exports.requestSickLeave = async (req, res) => {
   const { startDate, endDate, notes, userId } = req.body;
 
-  
-
   try {
     const user = await User.findOne({ _id: userId });
     const employee = await Employee.findOne({ email: user?.email });
-    // if (!employee) {
-    //   return res.status(404).json({ message: 'Employee not found' });
-    // }
 
     const workingDays = calculateWorkingDays(startDate, endDate);
+    const workingDates = getWorkingDatesArray(startDate, endDate);
     
     if (employee && workingDays > employee?.annualVacationDays) {
       return res.status(400).json({ 
@@ -30,6 +25,7 @@ exports.requestSickLeave = async (req, res) => {
       workspaceId: employee?.workspaceId,
       startDate,
       endDate,
+      dates: workingDates,
       workingDaysCount: workingDays,
       notes
     });
@@ -50,24 +46,16 @@ exports.updateSickLeave = async (req, res) => {
   const updates = req.body;
 
   try {
-    // Find the sick leave first
-    const sickLeave = await SickLeave.findOne({
-      _id: id,
-    });
-
+    const sickLeave = await SickLeave.findOne({ _id: id });
     if (!sickLeave) {
-      return res.status(404).json({
-        message: "Sick leave not found or unauthorized",
-      });
+      return res.status(404).json({ message: "Sick leave not found or unauthorized" });
     }
 
-    // If dates are being updated, recalculate working days
     if (updates.startDate || updates.endDate) {
       const startDate = updates.startDate || sickLeave.startDate;
       const endDate = updates.endDate || sickLeave.endDate;
       updates.workingDaysCount = calculateWorkingDays(startDate, endDate);
-
-      // Check if new dates exceed sickLeave allowance
+      updates.dates = getWorkingDatesArray(startDate, endDate);
 
       const user = await User.findOne({ _id: sickLeave.userId });
       const employee = await Employee.findOne({ email: user?.email });
