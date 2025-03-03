@@ -13,6 +13,10 @@ const shiftSchema = new mongoose.Schema({
     enum: ["weekdays", "daily", "individual"],
     default: "individual",
   },
+  dates: [{
+    type: Date,
+    required: true
+  }],
   notes: { type: String, required: false },
   workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace', required: true },
   createdAt: { type: Date, default: Date.now },

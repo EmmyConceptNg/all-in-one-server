@@ -1,19 +1,14 @@
 const Vacation = require('../models/Vacation');
 const Employee = require('../models/Employee');
-const { calculateWorkingDays } = require('../utils/dateUtils');
+const { calculateWorkingDays, generateDateArray } = require('../utils/dateUtils');
 const User = require('../models/User');
 
 exports.requestVacation = async (req, res) => {
   const { startDate, endDate, notes, userId } = req.body;
 
-  
-
   try {
     const user = await User.findOne({ _id: userId });
     const employee = await Employee.findOne({ email: user?.email });
-    // if (!employee) {
-    //   return res.status(404).json({ message: 'Employee not found' });
-    // }
 
     const workingDays = calculateWorkingDays(startDate, endDate);
     
@@ -23,12 +18,16 @@ exports.requestVacation = async (req, res) => {
       });
     }
 
+    // Generate array of dates
+    const dates = generateDateArray(startDate, endDate);
+
     const newVacation = new Vacation({
       userId: user?._id,
       superAdminId: employee ? employee?.superAdminId : user?.superAdminId,
       workspaceId: employee?.workspaceId,
       startDate,
       endDate,
+      dates, // Add dates array
       workingDaysCount: workingDays,
       notes
     });
@@ -76,6 +75,9 @@ exports.updateVacation = async (req, res) => {
           message: 'Updated vacation days would exceed annual allowance' 
         });
       }
+
+      // Generate array of dates
+      updates.dates = generateDateArray(startDate, endDate);
     }
 
     // Only super_admin or manager can update status

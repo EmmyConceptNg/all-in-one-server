@@ -31,6 +31,10 @@ const vacationSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  dates: [{
+    type: Date,
+    required: true
+  }],
   notes: String
 }, { timestamps: true });
 

@@ -1,6 +1,7 @@
 const Shift = require('../models/Shifts');
 const Employee = require('../models/Employee');
 const { getSuperAdminIdForStaff } = require('../utils/userUtils');
+const { generateDateArray } = require('../utils/dateUtils');
 
 exports.addShift = async (req, res) => {
     const { userId, startDate, endDate, startTime, endTime, pauseTime, workspaceId, occurrence, notes } = req.body;
@@ -22,11 +23,15 @@ exports.addShift = async (req, res) => {
         return res.status(403).json({ message: 'You do not have the required permissions to create a shift' });
       }
   
+      // Generate array of dates
+      const dates = generateDateArray(startDate, endDate);
+
       const newShift = new Shift({
         userId: targetUserId,
         superAdminId: req.userRole === 'super_admin' ? req.userId : null,
         startDate,
         endDate,
+        dates, // Add dates array
         startTime,
         endTime,
         pauseTime,
