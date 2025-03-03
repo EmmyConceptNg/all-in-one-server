@@ -7,6 +7,18 @@ exports.addShift = async (req, res) => {
     const { userId, startDate, endDate, startTime, endTime, pauseTime, workspaceId, occurrence, notes } = req.body;
   
     try {
+      // Validate dates
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: 'Start date and end date are required' });
+      }
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ message: 'Invalid date format' });
+      }
+
       const userRole = req.userRole;
       let targetUserId = userId || req.userId; 
   
@@ -29,7 +41,8 @@ exports.addShift = async (req, res) => {
 
       if (filteredDates.length === 0) {
         return res.status(400).json({ 
-          message: 'No valid dates found for the given date range and occurrence pattern' 
+          message: 'No valid dates found for the given date range and occurrence pattern',
+          debug: { startDate, endDate, occurrence, allDates }
         });
       }
 
@@ -55,7 +68,11 @@ exports.addShift = async (req, res) => {
         datesCount: filteredDates.length 
       });
     } catch (error) {
-      res.status(500).json({ message: 'Server error', error: error.message });
+      res.status(500).json({ 
+        message: 'Server error', 
+        error: error.message,
+        debug: { startDate, endDate, occurrence }
+      });
     }
   };
 
