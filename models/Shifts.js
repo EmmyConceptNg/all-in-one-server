@@ -10,16 +10,16 @@ const shiftSchema = new mongoose.Schema({
   pauseTime: { type: String, required: false },
   occurrence: {
     type: String,
-    enum: ["weekdays", "daily", "individual"],
-    default: "individual",
+    enum: ['daily', 'weekdays', 'weekends'],
+    default: 'daily'
   },
   dates: [{
-    type: Date,
+    type: String,
     required: true
   }],
   notes: { type: String, required: false },
   workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace', required: true },
   createdAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Shift", shiftSchema);

@@ -1,7 +1,7 @@
 const Shift = require('../models/Shifts');
 const Employee = require('../models/Employee');
 const { getSuperAdminIdForStaff } = require('../utils/userUtils');
-const { generateDateArray } = require('../utils/dateUtils');
+const { generateDateArray, filterDatesByOccurrence } = require('../utils/dateUtils');
 
 exports.addShift = async (req, res) => {
     const { userId, startDate, endDate, startTime, endTime, pauseTime, workspaceId, occurrence, notes } = req.body;
@@ -23,15 +23,22 @@ exports.addShift = async (req, res) => {
         return res.status(403).json({ message: 'You do not have the required permissions to create a shift' });
       }
   
-      // Generate array of dates
-      const dates = generateDateArray(startDate, endDate);
+      // Generate array of dates and filter based on occurrence
+      const allDates = generateDateArray(startDate, endDate);
+      const filteredDates = filterDatesByOccurrence(allDates, occurrence);
+
+      if (filteredDates.length === 0) {
+        return res.status(400).json({ 
+          message: 'No valid dates found for the given date range and occurrence pattern' 
+        });
+      }
 
       const newShift = new Shift({
         userId: targetUserId,
         superAdminId: req.userRole === 'super_admin' ? req.userId : null,
         startDate,
         endDate,
-        dates, // Add dates array
+        dates: filteredDates, // Use filtered dates array
         startTime,
         endTime,
         pauseTime,
@@ -42,7 +49,11 @@ exports.addShift = async (req, res) => {
   
       await newShift.save();
   
-      res.status(201).json({ message: 'Shift created successfully', shift: newShift });
+      res.status(201).json({ 
+        message: 'Shift created successfully', 
+        shift: newShift,
+        datesCount: filteredDates.length 
+      });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
     }
