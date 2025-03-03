@@ -34,12 +34,21 @@ const filterDatesByOccurrence = (dates, occurrence) => {
 exports.generateDateArray = (startDate, endDate) => {
   const dates = [];
   let currentDate = new Date(startDate);
+  currentDate.setHours(0, 0, 0, 0); // Reset time part
+  
   const lastDate = new Date(endDate);
+  lastDate.setHours(23, 59, 59, 999); // Set to end of day
 
   while (currentDate <= lastDate) {
     dates.push(currentDate.toISOString().split('T')[0]);
     currentDate.setDate(currentDate.getDate() + 1);
   }
+  
+  // Ensure at least one date for same-day shifts
+  if (dates.length === 0 && startDate === endDate) {
+    dates.push(new Date(startDate).toISOString().split('T')[0]);
+  }
+  
   return dates;
 };
 
