@@ -73,6 +73,59 @@ exports.getShifts = async (req, res) => {
   }
 };
 
+exports.updateShift = async (req, res) => {
+  const shiftId = req.params.id;
+  const updates = req.body;
+  
+  try {
+    // Find the shift and check permissions
+    const query = req.userRole === 'superadmin' 
+      ? { _id: shiftId, superAdminId: req.userId }
+      : { _id: shiftId, userId: req.userId };
+
+    const existingShift = await Shift.findOne(query);
+
+    if (!existingShift) {
+      return res.status(404).json({ 
+        message: 'Shift not found or you do not have permission to update this shift' 
+      });
+    }
+
+    // If dates or occurrence pattern is being updated, recalculate the dates array
+    if (updates.startDate || updates.endDate || updates.occurrence) {
+      const startDate = updates.startDate || existingShift.startDate;
+      const endDate = updates.endDate || existingShift.endDate;
+      const occurrence = updates.occurrence || existingShift.occurrence;
+
+      const allDates = generateDateArray(startDate, endDate);
+      const filteredDates = filterDatesByOccurrence(allDates, occurrence);
+
+      if (filteredDates.length === 0) {
+        return res.status(400).json({ 
+          message: 'No valid dates found for the given date range and occurrence pattern' 
+        });
+      }
+
+      updates.dates = filteredDates;
+    }
+
+    // Update the shift
+    const updatedShift = await Shift.findOneAndUpdate(
+      query,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    res.status(200).json({ 
+      message: 'Shift updated successfully', 
+      shift: updatedShift,
+      datesCount: updatedShift.dates.length 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 exports.deleteShift = async (req, res) => {
   const shiftId = req.params.id;
 
